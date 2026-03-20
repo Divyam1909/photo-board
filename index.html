@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Love - Photo Board</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f5e6c8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        /* The Main Wooden Frame */
+        .board-frame {
+            width: 95vw;
+            height: 90vh;
+            max-width: 1600px;
+            background: #6b4423;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.9);
+            position: relative;
+            border: 4px solid #3a2211;
+        }
+
+        /* Container for lights wrapping the wooden frame */
+        .frame-lights-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 30; /* Above the corkboard */
+        }
+
+        /* The Corkboard Background */
+        .corkboard {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #8c6643;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' fill='%238c6643'/%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.4' mix-blend-mode='multiply'/%3E%3C/svg%3E");
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header Area */
+        .header {
+            text-align: center;
+            padding-top: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .header h1 {
+            color: #fff4d4;
+            font-size: 2.8rem;
+            line-height: 2.8rem;
+            letter-spacing: 3px;
+            text-shadow: 0 0 5px #fff, 0 0 10px #ffc107, 0 0 20px #ffc107, 0 0 40px #ff9800;
+            font-weight: 900;
+        }
+
+        .hearts {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .hearts svg {
+            width: 2.8rem;
+            height: 2.8rem;
+            filter: drop-shadow(0 0 7px rgba(220, 40, 40, 0.9))
+                    drop-shadow(0 0 14px rgba(255, 70, 70, 0.5))
+                    drop-shadow(1px 2px 3px rgba(0,0,0,0.5));
+        }
+
+        /* Layout for Polaroids */
+        .polaroids-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            padding: 0 2%;
+            margin-top: 0;
+            padding-bottom: 5vh;
+            z-index: 5;
+        }
+
+        .polaroid-row {
+            position: relative;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* SVG Background Strings (Wires) */
+        .string-svg, .perimeter-wire-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: visible;
+        }
+
+        .perimeter-wire-svg {
+            z-index: 15;
+        }
+
+        /* Individual Polaroid Styling */
+        .polaroid-wrapper {
+            position: absolute;
+            width: 11%;
+            min-width: 80px;
+            max-width: 140px;
+            z-index: 1;
+            cursor: pointer;
+            will-change: filter;
+            transition: filter 0.18s ease;
+        }
+
+        .polaroid-wrapper:hover {
+            filter: drop-shadow(0 0 10px rgba(255, 195, 40, 0.85))
+                    drop-shadow(0 0 4px rgba(255, 225, 110, 0.9));
+        }
+
+        .polaroid {
+            background: #fdfdfd;
+            padding: 6% 6% 24% 6%;
+            border-radius: 2px;
+            box-shadow: 3px 5px 12px rgba(0,0,0,0.4);
+            position: relative;
+            margin-top: 5px;
+        }
+
+        /* The Wooden Peg */
+        .pin {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 26px;
+            background: #d4a373;
+            border: 1px solid #7c5c3b;
+            border-radius: 2px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+
+        .pin::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: -1px;
+            width: 8px;
+            height: 3px;
+            background: #999;
+        }
+
+        /* Photo Area Inside Polaroid */
+        .photo-area {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #1a1a1a;
+            overflow: hidden;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .photo-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .polaroid-hearts {
+            position: absolute;
+            bottom: 5px;
+            left: 8px;
+            color: #d63031;
+            font-size: 10px;
+        }
+
+        .polaroid-title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 0 8px 5px 8px;
+            text-align: center;
+            font-family: 'Georgia', serif;
+            font-size: clamp(6px, 0.75vw, 10px);
+            color: #5a3a1a;
+            font-style: italic;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        /* Realistic Fairy Light Bulbs & Wires */
+        .fairy-bulb-wrapper {
+            position: absolute;
+            width: 8px;
+            height: 16px;
+            z-index: 20;
+            transform-origin: center top;
+            pointer-events: none;
+        }
+
+        .fairy-bulb-base {
+            position: absolute;
+            top: 0;          /* starts exactly at the wire (wrapper top = wire position) */
+            left: 2px;
+            width: 4px;
+            height: 5px;
+            background: #222;
+            border-radius: 0 0 2px 2px;
+        }
+
+        .fairy-bulb {
+            position: absolute;
+            top: 5px;        /* hangs below the base */
+            left: 1px;
+            width: 6px;
+            height: 10px;
+            background: #fff9e6;
+            border-radius: 50% 50% 40% 40%;
+            box-shadow: 0 0 10px 4px rgba(255, 223, 137, 0.9);
+            animation: twinkle 1.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.5; box-shadow: 0 0 5px 2px rgba(255, 223, 137, 0.5); }
+            100% { opacity: 1; box-shadow: 0 0 15px 6px rgba(255, 223, 137, 1); transform: scale(1.05); }
+        }
+
+        /* ── HEART LIGHTS SWITCH — on the corkboard ─────────────
+           Wrapper positions the heart on the corkboard surface.
+           Checked  = lights ON  (heart turns pink)
+           Unchecked = lights OFF (heart stays outline)             */
+        #lights-switch {
+            position: absolute;
+            top: 36px;       /* pushed down to keep heart inside corkboard after transform */
+            right: 34px;
+            z-index: 35;     /* above frame-lights-container (z:30) */
+            width: 12px;
+            height: 12px;
+            overflow: visible;
+        }
+
+        /* ── Uiverse heart switch (by barisdogansutcu) ─────────── */
+        .love-heart:before, #switch {
+            display: none;
+        }
+
+        .love-heart, .love-heart::after {
+            border-color: hsl(231deg 28% 86%);
+            border: 1px solid;
+            border-top-left-radius: 100px;
+            border-top-right-radius: 100px;
+            width: 10px;
+            height: 8px;
+            border-bottom: 0;
+        }
+
+        .round {
+            position: absolute;
+            z-index: 1;
+            width: 8px;
+            height: 8px;
+            background: hsl(0deg 0% 100%);
+            box-shadow: rgb(0 0 0 / 24%) 0px 0px 4px 0px;
+            border-radius: 100%;
+            left: 0px;
+            bottom: -1px;
+            transition: all .5s ease;
+            animation: check-animation2 .5s forwards;
+        }
+
+        #switch:checked + label .round {
+            transform: translate(0px, 0px);
+            animation: check-animation .5s forwards;
+            background-color: hsl(0deg 0% 100%);
+        }
+
+        @keyframes check-animation {
+            0%   { transform: translate(0px,  0px); }
+            50%  { transform: translate(0px,  7px); }
+            100% { transform: translate(7px,  7px); }
+        }
+
+        @keyframes check-animation2 {
+            0%   { transform: translate(7px, 7px); }
+            50%  { transform: translate(0px, 7px); }
+            100% { transform: translate(0px, 0px); }
+        }
+
+        .love-heart {
+            box-sizing: border-box;
+            position: relative;
+            transform: rotate(-45deg) translate(-50%, -16px) scale(2.8);
+            display: block;
+            border-color: hsl(231deg 28% 86%);
+            cursor: pointer;
+            top: 0;
+        }
+
+        #switch:checked + .love-heart,
+        #switch:checked + .love-heart::after,
+        #switch:checked + .love-heart .bottom {
+            border-color: hsl(347deg 81% 61%);
+            box-shadow: inset 6px -5px 0px 2px hsl(347deg 99% 72%);
+        }
+
+        .love-heart::after, .love-heart .bottom {
+            content: "";
+            display: block;
+            box-sizing: border-box;
+            position: absolute;
+            border-color: hsl(231deg 28% 86%);
+        }
+
+        .love-heart::after {
+            right: -9px;
+            transform: rotate(90deg);
+            top: 7px;
+        }
+
+        .love-heart .bottom {
+            width: 11px;
+            height: 11px;
+            border-left: 1px solid;
+            border-bottom: 1px solid;
+            border-color: hsl(231deg 28% 86%);
+            left: -1px;
+            top: 5px;
+            border-radius: 0px 0px 0px 5px;
+        }
+
+        #switch:checked + .love-heart .bottom {
+            border-color: hsl(347deg 81% 61%);
+        }
+
+        /* ── LIGHTS OFF — bulb stays visible, glow removed ── */
+        body.lights-off .fairy-bulb {
+            background: #9a8878 !important;
+            box-shadow: none !important;
+            animation-play-state: paused !important;
+            opacity: 0.55 !important;
+        }
+
+        /* ── ZOOM MODAL ─────────────────────────────────────── */
+        #modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.22s ease;
+            padding: 20px;
+            will-change: opacity;
+        }
+
+        #modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #modal-polaroid {
+            background: #fdfdfd;
+            padding: 14px 14px 54px 14px;
+            border-radius: 2px;
+            box-shadow: 6px 12px 50px rgba(0, 0, 0, 0.8);
+            position: relative;
+            transform: scale(0.15);
+            transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+            max-width: min(80vw, 460px);
+            will-change: transform;
+        }
+
+        #modal-overlay.active #modal-polaroid {
+            transform: scale(1);
+        }
+
+        #modal-img {
+            display: block;
+            width: min(65vw, 400px);
+            height: min(65vw, 400px);
+            object-fit: cover;
+            background: #1a1a1a;
+        }
+
+        #modal-pin {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 30px;
+            background: #d4a373;
+            border: 1px solid #7c5c3b;
+            border-radius: 2px;
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+        }
+
+        #modal-pin::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: -1px;
+            width: 10px;
+            height: 3px;
+            background: #999;
+        }
+
+        #modal-hearts {
+            position: absolute;
+            bottom: 8px;
+            left: 10px;
+            color: #d63031;
+            font-size: 14px;
+        }
+
+        #modal-caption {
+            margin-top: 22px;
+            color: #fff8e8;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            font-size: clamp(14px, 2vw, 22px);
+            text-align: center;
+            letter-spacing: 0.04em;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
+            min-height: 1.8em;
+            max-width: min(80vw, 460px);
+        }
+
+        #modal-close {
+            position: absolute;
+            top: -14px;
+            right: -14px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #3a1a00;
+            border: 2px solid #7c5c3b;
+            color: #f0d8b0;
+            font-size: 16px;
+            line-height: 24px;
+            text-align: center;
+            cursor: pointer;
+            z-index: 1001;
+            transition: background 0.2s, color 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+
+        #modal-close:hover {
+            background: #7c2000;
+            color: #fff;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.4rem; }
+            .hearts svg { width: 1.4rem; height: 1.4rem; }
+            #modal-img { width: 80vw; height: 80vw; }
+            #modal-polaroid { max-width: 92vw; padding: 10px 10px 44px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="board-frame" id="board-frame">
+        <!-- Frame Lights Container wrapped around the outer border -->
+        <div class="frame-lights-container" id="frame-lights"></div>
+
+        <div class="corkboard" id="corkboard">
+        <!-- Fairy lights on/off toggle — sits on the corkboard surface -->
+        <div class="love" id="lights-switch" title="Toggle fairy lights">
+            <input id="switch" type="checkbox" checked>
+            <label class="love-heart" for="switch">
+                <i class="left"></i>
+                <i class="right"></i>
+                <i class="bottom"></i>
+                <div class="round"></div>
+            </label>
+        </div>
+            <!-- Header -->
+            <div class="header">
+                <div class="hearts">
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                </div>
+                <h1>MY LOVE</h1>
+                <div class="hearts">
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d63031" stroke="#1a0000" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke fill"/><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ffaab4" transform="translate(12,12) scale(0.48) translate(-12,-12)"/></svg>
+                </div>
+            </div>
+
+            <!-- Polaroids Area -->
+            <div class="polaroids-container" id="polaroids-container">
+                <!-- Rows injected by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Zoom Modal -->
+    <div id="modal-overlay">
+        <div id="modal-polaroid">
+            <button id="modal-close">&times;</button>
+            <div id="modal-pin"></div>
+            <img id="modal-img" src="" alt="Memory" />
+            <div id="modal-hearts">❤️ ❤️</div>
+        </div>
+        <div id="modal-caption"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const rowsConfig = [
+                { count: 7, startY: 8, ctrlY: 52, endY: 5 },
+                { count: 7, startY: 5, ctrlY: 55, endY: 10 },
+                { count: 6, startY: 10, ctrlY: 60, endY: 8 }
+            ];
+
+            // Load captions first, then build board
+            let captions = {};
+            fetch('captions.json')
+                .then(r => r.ok ? r.json() : {})
+                .catch(() => ({}))
+                .then(data => {
+                    captions = data;
+                    buildBoard();
+                });
+
+            function buildBoard() {
+                const container = document.getElementById('polaroids-container');
+                let photoIndex = 1;
+                // Collect bulb data for post-layout tangent rotation
+                const stringBulbData = [];
+
+                rowsConfig.forEach(row => {
+                    const rowEl = document.createElement('div');
+                    rowEl.className = 'polaroid-row';
+
+                    // 1. SVG hanging wire
+                    // bezier x(t) = -8 + 116t  (linear in t — quadratic terms cancel)
+                    // so viewBox x maps 1:1 to element x%.
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('class', 'string-svg');
+                    svg.setAttribute('viewBox', '0 0 100 100');
+                    svg.setAttribute('preserveAspectRatio', 'none');
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', `M -8,${row.startY} Q 50,${row.ctrlY} 108,${row.endY}`);
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#161616');
+                    path.setAttribute('stroke-width', '2');
+                    path.setAttribute('vector-effect', 'non-scaling-stroke');
+                    svg.appendChild(path);
+                    rowEl.appendChild(svg);
+
+                    // 2. Fairy bulbs along the string
+                    // tB = bezier parameter for element x% position:
+                    //   x(tB) = -8 + 116*tB  →  tB = (X + 8) / 116
+                    // dY = tangent y-component (viewBox units) at tB.
+                    // After layout we convert to screen-space angle using row W/H.
+                    const NUM_BULBS = 28;
+                    for (let l = 0; l <= NUM_BULBS; l++) {
+                        const X  = (l / NUM_BULBS) * 100;          // 0–100% element width
+                        const tB = (X + 8) / 116;                  // bezier param at this X
+                        const Y  = (1-tB)*(1-tB)*row.startY
+                                 + 2*(1-tB)*tB*row.ctrlY
+                                 + tB*tB*row.endY;
+                        const dY = 2*(1-tB)*(row.ctrlY - row.startY)
+                                 + 2*tB*(row.endY - row.ctrlY);    // dy/dtB in viewBox units
+
+                        const bulbWrapper = document.createElement('div');
+                        bulbWrapper.className = 'fairy-bulb-wrapper string-bulb';
+                        bulbWrapper.style.left = `calc(${X}% - 4px)`;
+                        bulbWrapper.style.top  = `${Y}%`;
+                        bulbWrapper.innerHTML = `
+                            <div class="fairy-bulb-base"></div>
+                            <div class="fairy-bulb" style="animation-delay:${(l*0.18)%2}s;animation-duration:${1+(l%5)*0.2}s"></div>
+                        `;
+                        rowEl.appendChild(bulbWrapper);
+                        // dX in viewBox units is always 116 (constant for this bezier)
+                        stringBulbData.push({ el: bulbWrapper, dY, rowEl });
+                    }
+
+                    // 3. Polaroids
+                    const startX = 6, endX = 94;
+                    for (let i = 0; i < row.count; i++) {
+                        const idx = photoIndex++;
+                        const rot = (Math.random() * 12) - 6;
+                        const X   = startX + (endX - startX) * (i / (row.count - 1));
+                        const tB  = (X + 8) / 116;
+                        const Y   = (1-tB)*(1-tB)*row.startY
+                                  + 2*(1-tB)*tB*row.ctrlY
+                                  + tB*tB*row.endY;
+
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'polaroid-wrapper';
+                        wrapper.style.left = `${X}%`;
+                        wrapper.style.top  = `${Y}%`;
+                        wrapper.style.transform = `translate(-50%, -10px) rotate(${rot}deg)`;
+                        wrapper.style.transformOrigin = "50% 10px";
+
+                        const entry = captions[String(idx)];
+                        const title = (entry && entry.title) ? entry.title : '';
+                        wrapper.innerHTML = `
+                            <div class="polaroid">
+                                <div class="pin"></div>
+                                <div class="photo-area">
+                                    <img src="images/${idx}.jpg" alt="Memory ${idx}"
+                                         onerror="this.src=''; this.style.background='#1a1a1a';" />
+                                </div>
+                                <div class="polaroid-hearts">❤️</div>
+                                <div class="polaroid-title">${title}</div>
+                            </div>
+                        `;
+                        wrapper.addEventListener('click', () => openModal(idx, captions));
+                        rowEl.appendChild(wrapper);
+                    }
+
+                    container.appendChild(rowEl);
+                });
+
+                // After layout: rotate each string bulb to match the wire's tangent angle.
+                // The wire's tangent in screen space:
+                //   dx_screen = 116 * (rowWidth  / 100)   [constant for this bezier]
+                //   dy_screen = dY  * (rowHeight / 100)
+                // angle = atan2(dy_screen, dx_screen) = atan2(dY * H, 116 * W)
+                // transform-origin is center top (the wire contact point), so rotating
+                // by this angle tilts the base flush with the wire.
+                requestAnimationFrame(() => {
+                    stringBulbData.forEach(({ el, dY, rowEl }) => {
+                        const W = rowEl.offsetWidth;
+                        const H = rowEl.offsetHeight;
+                        if (!W || !H) return;
+                        const angle = Math.atan2(dY * H, 116 * W) * 180 / Math.PI;
+                        el.style.transform = `rotate(${angle}deg)`;
+                    });
+                });
+            }
+
+            // ── MODAL ──────────────────────────────────────────────
+            let typeTimer = null;
+
+            function openModal(idx, captions) {
+                const overlay  = document.getElementById('modal-overlay');
+                const modalImg = document.getElementById('modal-img');
+                const capEl    = document.getElementById('modal-caption');
+
+                modalImg.src = `images/${idx}.jpg`;
+                modalImg.onerror = () => { modalImg.src = ''; modalImg.style.background = '#1a1a1a'; };
+                capEl.textContent = '';
+                overlay.classList.add('active');
+
+                clearTimeout(typeTimer);
+                const entry = captions[String(idx)];
+                const caption = (entry && entry.caption) ? entry.caption : (typeof entry === 'string' ? entry : '');
+                typeTimer = setTimeout(() => typewrite(capEl, caption, 48), 400);
+            }
+
+            function closeModal() {
+                clearTimeout(typeTimer);
+                document.getElementById('modal-caption').textContent = '';
+                document.getElementById('modal-overlay').classList.remove('active');
+            }
+
+            function typewrite(el, text, speed) {
+                let i = 0;
+                el.textContent = '';
+                (function tick() {
+                    if (i < text.length) {
+                        el.textContent += text[i++];
+                        typeTimer = setTimeout(tick, speed);
+                    }
+                })();
+            }
+
+            document.getElementById('modal-overlay').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+            document.getElementById('modal-close').addEventListener('click', closeModal);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+            // ── LIGHTS SWITCH ──────────────────────────────────────
+            const switchInput = document.getElementById('switch');
+            switchInput.addEventListener('change', () => {
+                document.body.classList.toggle('lights-off', !switchInput.checked);
+            });
+
+            // ── PERIMETER FAIRY LIGHTS ─────────────────────────────
+            // numPoints drives how many bulbs appear on each side.
+            // We set horizontal sides to 32 and vertical to 18 so the
+            // physical spacing looks roughly equal (board is wider than tall).
+            // Every point gets a bulb — no random skip — for equidistant look.
+            const drawPerimeterLights = () => {
+                const frameLightsContainer = document.getElementById('frame-lights');
+
+                // bulbPoints: positions where we place a light
+                // wirePathPoints: denser set for the wire path itself
+                const bulbPoints = [];
+                const wirePathPts = [];
+
+                const addEdge = (startX, startY, endX, endY, isVertical) => {
+                    const numBulbs   = isVertical ? 18 : 32;
+                    const numWirePts = isVertical ? 40 : 60;
+
+                    // Dense wire path points
+                    for (let i = 0; i <= numWirePts; i++) {
+                        const t = i / numWirePts;
+                        let x = startX + (endX - startX) * t;
+                        let y = startY + (endY - startY) * t;
+                        const wave = Math.sin(t * Math.PI * (isVertical ? 8 : 12)) * 0.5;
+                        if (isVertical) x += wave; else y += wave;
+                        wirePathPts.push({ x, y });
+                    }
+
+                    // Equidistant bulb positions — one every (numWirePts / numBulbs) steps
+                    for (let b = 0; b < numBulbs; b++) {
+                        const t = b / numBulbs;
+                        let x = startX + (endX - startX) * t;
+                        let y = startY + (endY - startY) * t;
+                        const wave = Math.sin(t * Math.PI * (isVertical ? 8 : 12)) * 0.5;
+                        if (isVertical) x += wave; else y += wave;
+                        bulbPoints.push({ x, y });
+                    }
+                };
+
+                addEdge(1, 1, 99, 1, false);   // Top
+                addEdge(99, 1, 99, 99, true);  // Right
+                addEdge(99, 99, 1, 99, false); // Bottom
+                addEdge(1, 99, 1, 1, true);    // Left
+                wirePathPts.push({ x: wirePathPts[0].x, y: wirePathPts[0].y }); // close loop
+
+                // Draw the wire path SVG
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('class', 'perimeter-wire-svg');
+                svg.setAttribute('viewBox', '0 0 100 100');
+                svg.setAttribute('preserveAspectRatio', 'none');
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                let dPath = `M ${wirePathPts[0].x},${wirePathPts[0].y} `;
+                for (let i = 1; i < wirePathPts.length; i++) {
+                    dPath += `L ${wirePathPts[i].x},${wirePathPts[i].y} `;
+                }
+                path.setAttribute('d', dPath);
+                path.setAttribute('fill', 'none');
+                path.setAttribute('stroke', '#161616');
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('vector-effect', 'non-scaling-stroke');
+                svg.appendChild(path);
+                frameLightsContainer.appendChild(svg);
+
+                // Place a bulb at every equidistant point
+                bulbPoints.forEach(pt => {
+                    const bulbWrapper = document.createElement('div');
+                    bulbWrapper.className = 'fairy-bulb-wrapper';
+                    bulbWrapper.style.left = `calc(${pt.x}% - 4px)`;
+                    bulbWrapper.style.top  = `${pt.y}%`;
+                    const angle = (Math.random() - 0.5) * 80;
+                    bulbWrapper.style.transform = `rotate(${angle}deg)`;
+                    bulbWrapper.innerHTML = `
+                        <div class="fairy-bulb-base"></div>
+                        <div class="fairy-bulb" style="animation-delay: ${Math.random() * 2}s; animation-duration: ${1 + Math.random()}s"></div>
+                    `;
+                    frameLightsContainer.appendChild(bulbWrapper);
+                });
+            };
+
+            drawPerimeterLights();
+        });
+    </script>
+</body>
+</html>
