@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Love - Photo Board</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌻</text></svg>">
     <style>
         * {
             box-sizing: border-box;
@@ -19,6 +20,8 @@
             min-height: 100vh;
             font-family: 'Arial', sans-serif;
             overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* The Main Wooden Frame */
@@ -135,13 +138,15 @@
             max-width: 140px;
             z-index: 1;
             cursor: pointer;
-            will-change: filter;
-            transition: filter 0.18s ease;
+            will-change: filter, transform;
+            transition: filter 0.22s ease, transform 0.22s ease;
+            backface-visibility: hidden;
         }
 
         .polaroid-wrapper:hover {
             filter: drop-shadow(0 0 10px rgba(255, 195, 40, 0.85))
                     drop-shadow(0 0 4px rgba(255, 225, 110, 0.9));
+            transform: translate(-50%, -10px) scale(1.06) !important;
         }
 
         .polaroid {
@@ -395,14 +400,15 @@
 
         #modal-polaroid {
             background: #fdfdfd;
-            padding: 14px 14px 54px 14px;
+            padding: 14px 14px 72px 14px;
             border-radius: 2px;
             box-shadow: 6px 12px 50px rgba(0, 0, 0, 0.8);
             position: relative;
             transform: scale(0.15);
-            transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
             max-width: min(80vw, 460px);
             will-change: transform;
+            backface-visibility: hidden;
         }
 
         #modal-overlay.active #modal-polaroid {
@@ -415,6 +421,39 @@
             height: min(65vw, 400px);
             object-fit: cover;
             background: #1a1a1a;
+        }
+
+        #modal-video {
+            display: none;
+            width: min(65vw, 400px);
+            height: min(65vw, 400px);
+            object-fit: cover;
+            background: #1a1a1a;
+        }
+
+        /* Video polaroid thumbnail */
+        .photo-area video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .video-play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 28px;
+            height: 28px;
+            background: rgba(0,0,0,0.55);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 11px;
+            pointer-events: none;
         }
 
         #modal-pin {
@@ -440,12 +479,34 @@
             background: #999;
         }
 
-        #modal-hearts {
+        #modal-bottom {
             position: absolute;
-            bottom: 8px;
-            left: 10px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+        }
+
+        #modal-hearts {
             color: #d63031;
-            font-size: 14px;
+            font-size: 20px;
+            letter-spacing: 3px;
+            flex-shrink: 0;
+        }
+
+        #modal-title {
+            flex: 1;
+            text-align: center;
+            font-family: 'Georgia', serif;
+            font-size: clamp(14px, 1.8vw, 20px);
+            color: #5a3a1a;
+            font-style: italic;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         #modal-caption {
@@ -488,7 +549,7 @@
         @media (max-width: 600px) {
             .header h1 { font-size: 1.4rem; }
             .hearts svg { width: 1.4rem; height: 1.4rem; }
-            #modal-img { width: 80vw; height: 80vw; }
+            #modal-img, #modal-video { width: 80vw; height: 80vw; }
             #modal-polaroid { max-width: 92vw; padding: 10px 10px 44px 10px; }
         }
     </style>
@@ -546,28 +607,51 @@
             <button id="modal-close">&times;</button>
             <div id="modal-pin"></div>
             <img id="modal-img" src="" alt="Memory" />
-            <div id="modal-hearts">❤️ ❤️</div>
+            <video id="modal-video" controls playsinline></video>
+            <div id="modal-bottom">
+                <div id="modal-hearts">❤️ ❤️</div>
+                <div id="modal-title"></div>
+            </div>
         </div>
         <div id="modal-caption"></div>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            const captions = {
+                "1":  { "title": "Our First Date",        "caption": "Flowers on the table, fries in the middle, and you across from me. I knew even then that this was going to be something special." },
+                "2":  { "title": "That Smile",            "caption": "This is my favourite photo of us. Your head on mine, that little smirk of yours, and me grinning like an idiot. This is exactly what happiness looks like." },
+                "3":  { "title": "Surprised Her",         "caption": "The look on your face when I showed up with sunflowers and a book — eyes shut, smiling so wide you couldn't even open them. I'd do it a hundred times over just to see this." },
+                "4":  { "title": "Elevator Moment",       "caption": "A stolen mirror selfie in an elevator, bouquet still in hand. Every floor we passed felt like the world slowing down just for us." },
+                "5":  { "title": "Station Goofballs",     "caption": "Standing at the railway station being absolute idiots together. I don't even remember what we were laughing about, but I remember I never wanted to get on that train." },
+                "6":  { "title": "Lazy Afternoon",        "caption": "Nothing fancy — just the two of us on a quiet afternoon, curtains drawn, nowhere to be. These are the moments I hold onto the tightest." },
+                "7":  { "title": "Kiss on the Cheek",     "caption": "You leaned in without warning and kissed my cheek like it was the most natural thing in the world. It kind of is, with you." },
+                "8":  { "title": "Eye to Eye",            "caption": "Two pairs of eyes, two completely different people, one ridiculous amount of love. I could look at you forever and still not get enough." },
+                "9":  { "title": "Looking Into You",      "caption": "Same photo, different moment. The closer we got, the more I realised — your eyes are the only place I've ever felt completely at home." },
+                "10": { "title": "Golden Hour Us",        "caption": "The sun was setting and you were making the most ridiculous pout while I was half in the frame. Still the most beautiful thing I've ever seen — you, not the sunset." },
+                "11": { "title": "Infinity Ring",         "caption": "An infinity ring against the sea at dusk. I put it on your finger at the water's edge and didn't say much, but I meant forever." },
+                "12": { "title": "Hold Me Close",         "caption": "You buried your head in my shoulder in the middle of the street and I just held on. I didn't want to let go. I still don't." },
+                "13": { "title": "Looking at Each Other", "caption": "We were just standing there, looking at each other, and someone caught this. I'm so glad they did. This is what we look like when we're completely ourselves." },
+                "14": { "title": "You Leaned In",         "caption": "Your head resting against my chest, eyes closed, and me looking down at you like I can't quite believe you're real. I still can't, some days." },
+                "15": { "title": "City Nights",           "caption": "You spinning on a rooftop in the city lights, hair flying, laughing into the wind. I was watching you and thinking — god, she's incredible." },
+                "16": { "title": "Both Kissing",          "caption": "We both leaned in at the same time and it ended up being more of a cheek squish than anything else. Honestly, this might be my favourite one of all." },
+                "17": { "title": "Us in Motion",          "caption": "Some moments are too alive to be frozen in a photo. This one moves, just like we do — always forward, always together.", "type": "video" },
+                "18": { "title": "Coming Soon", "caption": "A memory waiting to be made.", "placeholder": true },
+                "19": { "title": "Coming Soon", "caption": "A memory waiting to be made.", "placeholder": true },
+                "20": { "title": "Coming Soon", "caption": "A memory waiting to be made.", "placeholder": true }
+            };
+
+            // Auto-distribute entries across 3 rows
+            const total = Object.keys(captions).length;
+            const base  = Math.floor(total / 3);
+            const extra = total % 3;
             const rowsConfig = [
-                { count: 7, startY: 8, ctrlY: 52, endY: 5 },
-                { count: 7, startY: 5, ctrlY: 55, endY: 10 },
-                { count: 6, startY: 10, ctrlY: 60, endY: 8 }
+                { count: base + (extra > 0 ? 1 : 0), startY: 8,  ctrlY: 52, endY: 5  },
+                { count: base + (extra > 1 ? 1 : 0), startY: 5,  ctrlY: 55, endY: 10 },
+                { count: base,                        startY: 10, ctrlY: 60, endY: 8  }
             ];
 
-            // Load captions first, then build board
-            let captions = {};
-            fetch('captions.json')
-                .then(r => r.ok ? r.json() : {})
-                .catch(() => ({}))
-                .then(data => {
-                    captions = data;
-                    buildBoard();
-                });
+            buildBoard();
 
             function buildBoard() {
                 const container = document.getElementById('polaroids-container');
@@ -643,12 +727,20 @@
 
                         const entry = captions[String(idx)];
                         const title = (entry && entry.title) ? entry.title : '';
+                        const isVideo = entry && entry.type === 'video';
+                        const isPlaceholder = entry && entry.placeholder;
+                        const mediaHTML = isVideo
+                            ? `<video src="images/${idx}.mp4" muted preload="metadata"></video>
+                               <div class="video-play-icon">&#9654;</div>`
+                            : isPlaceholder
+                            ? ``
+                            : `<img src="images/${idx}.jpg" alt="Memory ${idx}"
+                                    onerror="this.src=''; this.style.background='#1a1a1a';" />`;
                         wrapper.innerHTML = `
                             <div class="polaroid">
                                 <div class="pin"></div>
                                 <div class="photo-area">
-                                    <img src="images/${idx}.jpg" alt="Memory ${idx}"
-                                         onerror="this.src=''; this.style.background='#1a1a1a';" />
+                                    ${mediaHTML}
                                 </div>
                                 <div class="polaroid-hearts">❤️</div>
                                 <div class="polaroid-title">${title}</div>
@@ -683,23 +775,45 @@
             let typeTimer = null;
 
             function openModal(idx, captions) {
-                const overlay  = document.getElementById('modal-overlay');
-                const modalImg = document.getElementById('modal-img');
-                const capEl    = document.getElementById('modal-caption');
+                const overlay    = document.getElementById('modal-overlay');
+                const modalImg   = document.getElementById('modal-img');
+                const modalVideo = document.getElementById('modal-video');
+                const capEl      = document.getElementById('modal-caption');
+                const titleEl    = document.getElementById('modal-title');
 
-                modalImg.src = `images/${idx}.jpg`;
-                modalImg.onerror = () => { modalImg.src = ''; modalImg.style.background = '#1a1a1a'; };
+                const entry   = captions[String(idx)];
+                const isVideo = entry && entry.type === 'video';
+
+                titleEl.textContent = (entry && entry.title) ? entry.title : '';
+
+                if (isVideo) {
+                    modalImg.style.display   = 'none';
+                    modalVideo.style.display = 'block';
+                    modalVideo.src           = `images/${idx}.mp4`;
+                    modalVideo.load();
+                    overlay.classList.add('active');
+                    setTimeout(() => modalVideo.play(), 350);
+                } else {
+                    modalVideo.style.display = 'none';
+                    modalVideo.pause();
+                    modalVideo.src           = '';
+                    modalImg.style.display   = 'block';
+                    modalImg.src             = `images/${idx}.jpg`;
+                    modalImg.onerror         = () => { modalImg.src = ''; modalImg.style.background = '#1a1a1a'; };
+                    overlay.classList.add('active');
+                }
+
                 capEl.textContent = '';
-                overlay.classList.add('active');
-
                 clearTimeout(typeTimer);
-                const entry = captions[String(idx)];
                 const caption = (entry && entry.caption) ? entry.caption : (typeof entry === 'string' ? entry : '');
                 typeTimer = setTimeout(() => typewrite(capEl, caption, 48), 400);
             }
 
             function closeModal() {
                 clearTimeout(typeTimer);
+                const modalVideo = document.getElementById('modal-video');
+                modalVideo.pause();
+                modalVideo.src = '';
                 document.getElementById('modal-caption').textContent = '';
                 document.getElementById('modal-overlay').classList.remove('active');
             }
