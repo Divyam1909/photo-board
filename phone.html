@@ -13,7 +13,7 @@
             /* Locked screen wallpaper */
             --locked-wallpaper: url('images/14.jpg');
             /* Unlocked screen wallpaper (Appears after ink is drained) */
-            --unlocked-wallpaper: url('https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?q=80&w=800&auto=format&fit=crop');
+            --unlocked-wallpaper: url('images/flowers.png');
         }
 
         body {
@@ -770,23 +770,29 @@
             }, 500);
 
             let charIndex = 0;
-            // Slightly varied typing speed feels more human and less robotic
-            const getTypingSpeed = () => 20 + Math.random() * 40; 
+            let nextCharAt = Date.now() + 1000; // initial delay before first char
+
+            function getTypingSpeed() { return 20 + Math.random() * 40; }
 
             function typeWriter() {
+                typingTimeout = setTimeout(typeWriter, 8); // poll every 8ms
+                const now = Date.now();
+                if (now < nextCharAt) return; // not yet time for next char
+
                 if (charIndex < romanticParagraph.length) {
-                    const currentText = romanticParagraph.substring(0, charIndex + 1);
-                    
-                    // &#8203; is a zero-width space. It stays entirely invisible but tracks coordinates perfectly.
+                    // Catch up: type all chars whose scheduled time has passed
+                    while (charIndex < romanticParagraph.length && nextCharAt <= now) {
+                        charIndex++;
+                        nextCharAt += getTypingSpeed();
+                    }
+
+                    const currentText = romanticParagraph.substring(0, charIndex);
+                    // &#8203; is a zero-width space — invisible but tracks cursor position
                     pBox.innerHTML = currentText + '<span id="typing-cursor">&#8203;</span>';
-                    
-                    charIndex++;
-                    
+
                     // Set the physics target: ink level drains relative to text typed
                     const progress = charIndex / romanticParagraph.length;
                     targetInkPercent = (1 - progress) * 100;
-
-                    typingTimeout = setTimeout(typeWriter, getTypingSpeed());
                 } else {
                     // Finished writing - final cleanup
                     pBox.innerHTML = romanticParagraph;
@@ -808,7 +814,7 @@
                 }
             }
 
-            typingTimeout = setTimeout(typeWriter, 1000);
+            typingTimeout = setTimeout(typeWriter, 8); // start the poll loop
         }
 
         // --- Reset / Lock Screen Again Logic ---
