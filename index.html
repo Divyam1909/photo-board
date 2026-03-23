@@ -439,6 +439,22 @@
             display: block;
         }
 
+        .portal-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            animation: portal-pulse 2s ease-in-out infinite;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        @keyframes portal-pulse {
+            0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+            50%       { opacity: 1;   transform: translate(-50%, -50%) scale(1.2); }
+        }
+
         .video-play-icon {
             position: absolute;
             top: 50%;
@@ -509,6 +525,64 @@
             text-overflow: ellipsis;
         }
 
+        #modal-portal-cta {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            right: 14px;
+            bottom: 72px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background: #111;
+        }
+
+        #modal-portal-cta.visible {
+            display: flex;
+        }
+
+        #modal-portal-question {
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            font-size: clamp(15px, 2vw, 21px);
+            color: #f0d8b0;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        #modal-portal-cta.revealed #modal-portal-question {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #modal-portal-yes {
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            font-size: clamp(14px, 1.8vw, 18px);
+            color: #3a1a00;
+            background: #f0d8b0;
+            border: 2px solid #7c5c3b;
+            padding: 10px 32px;
+            border-radius: 2px;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.7s ease 0.25s, transform 0.7s ease 0.25s, background 0.2s;
+        }
+
+        #modal-portal-cta.revealed #modal-portal-yes {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #modal-portal-yes:hover {
+            background: #ffe8c0;
+        }
+
         #modal-caption {
             margin-top: 22px;
             color: #fff8e8;
@@ -546,6 +620,29 @@
             color: #fff;
         }
 
+        /* ── PORTAL TRANSITION VEIL ── */
+        #transition-veil {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #fffdf5 0%, #f5e6c8 55%, #e0c89a 100%);
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.2);
+            filter: blur(30px);
+        }
+
+        @keyframes veil-bloom {
+            0%   { opacity: 0; transform: scale(0.2); filter: blur(30px); }
+            60%  { opacity: 1; transform: scale(1);   filter: blur(0px);  }
+            100% { opacity: 1; transform: scale(1);   filter: blur(0px);  }
+        }
+
+        #transition-veil.blooming {
+            animation: veil-bloom 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            pointer-events: all;
+        }
+
         @media (max-width: 600px) {
             .header h1 { font-size: 1.4rem; }
             .hearts svg { width: 1.4rem; height: 1.4rem; }
@@ -555,6 +652,8 @@
     </style>
 </head>
 <body>
+
+    <div id="transition-veil"></div>
 
     <div class="board-frame" id="board-frame">
         <!-- Frame Lights Container wrapped around the outer border -->
@@ -608,6 +707,10 @@
             <div id="modal-pin"></div>
             <img id="modal-img" src="" alt="Memory" />
             <video id="modal-video" controls playsinline></video>
+            <div id="modal-portal-cta">
+                <p id="modal-portal-question">Continue to the surprise?</p>
+                <button id="modal-portal-yes">Yes</button>
+            </div>
             <div id="modal-bottom">
                 <div id="modal-hearts">❤️ ❤️</div>
                 <div id="modal-title"></div>
@@ -638,7 +741,7 @@
                 "17": { "title": "Us in Motion",          "caption": "Some moments are too alive to be frozen in a photo. This one moves, just like we do — always forward, always together.", "type": "video" },
                 "18": { "title": "Coming Soon", "caption": "A memory waiting to be made.", "placeholder": true },
                 "19": { "title": "Coming Soon", "caption": "A memory waiting to be made.", "placeholder": true },
-                "20": { "title": "Coming Soon", "caption": "A memory waiting to be made.", "placeholder": true }
+                "20": { "title": "One More Thing...", "caption": "You think this was all?...... I've been saving the best part for last. Close your eyes, take a breath — there's one more surprise waiting for you.", "type": "portal" }
             };
 
             // Auto-distribute entries across 3 rows
@@ -727,11 +830,14 @@
 
                         const entry = captions[String(idx)];
                         const title = (entry && entry.title) ? entry.title : '';
-                        const isVideo = entry && entry.type === 'video';
+                        const isVideo  = entry && entry.type === 'video';
+                        const isPortal = entry && entry.type === 'portal';
                         const isPlaceholder = entry && entry.placeholder;
                         const mediaHTML = isVideo
                             ? `<video src="images/${idx}.mp4" muted preload="metadata"></video>
                                <div class="video-play-icon">&#9654;</div>`
+                            : isPortal
+                            ? `<div class="portal-icon">✦</div>`
                             : isPlaceholder
                             ? ``
                             : `<img src="images/${idx}.jpg" alt="Memory ${idx}"
@@ -780,19 +886,34 @@
                 const modalVideo = document.getElementById('modal-video');
                 const capEl      = document.getElementById('modal-caption');
                 const titleEl    = document.getElementById('modal-title');
+                const portalCta  = document.getElementById('modal-portal-cta');
 
-                const entry   = captions[String(idx)];
-                const isVideo = entry && entry.type === 'video';
+                const entry    = captions[String(idx)];
+                const isVideo  = entry && entry.type === 'video';
+                const isPortal = entry && entry.type === 'portal';
 
                 titleEl.textContent = (entry && entry.title) ? entry.title : '';
+
+                // Reset portal state
+                portalCta.classList.remove('visible', 'revealed');
 
                 if (isVideo) {
                     modalImg.style.display   = 'none';
                     modalVideo.style.display = 'block';
+                    portalCta.style.display  = '';
                     modalVideo.src           = `images/${idx}.mp4`;
                     modalVideo.load();
                     overlay.classList.add('active');
                     setTimeout(() => modalVideo.play(), 350);
+                } else if (isPortal) {
+                    modalVideo.style.display    = 'none';
+                    modalVideo.pause();
+                    modalVideo.src              = '';
+                    modalImg.style.display      = 'block';
+                    modalImg.src                = '';
+                    modalImg.style.background   = '#111';
+                    portalCta.classList.add('visible');
+                    overlay.classList.add('active');
                 } else {
                     modalVideo.style.display = 'none';
                     modalVideo.pause();
@@ -806,28 +927,43 @@
                 capEl.textContent = '';
                 clearTimeout(typeTimer);
                 const caption = (entry && entry.caption) ? entry.caption : (typeof entry === 'string' ? entry : '');
-                typeTimer = setTimeout(() => typewrite(capEl, caption, 48), 400);
+                const onDone  = isPortal ? () => {
+                    setTimeout(() => portalCta.classList.add('revealed'), 300);
+                } : null;
+                typeTimer = setTimeout(() => typewrite(capEl, caption, 48, onDone), 400);
             }
 
             function closeModal() {
                 clearTimeout(typeTimer);
                 const modalVideo = document.getElementById('modal-video');
+                const modalImg   = document.getElementById('modal-img');
+                const portalCta  = document.getElementById('modal-portal-cta');
                 modalVideo.pause();
                 modalVideo.src = '';
+                modalImg.style.background = '';
+                portalCta.classList.remove('visible', 'revealed');
                 document.getElementById('modal-caption').textContent = '';
                 document.getElementById('modal-overlay').classList.remove('active');
             }
 
-            function typewrite(el, text, speed) {
+            function typewrite(el, text, speed, onDone) {
                 let i = 0;
                 el.textContent = '';
                 (function tick() {
                     if (i < text.length) {
                         el.textContent += text[i++];
                         typeTimer = setTimeout(tick, speed);
+                    } else if (onDone) {
+                        onDone();
                     }
                 })();
             }
+
+            document.getElementById('modal-portal-yes').addEventListener('click', () => {
+                const veil = document.getElementById('transition-veil');
+                veil.classList.add('blooming');
+                setTimeout(() => { window.location.href = 'phone.html'; }, 900);
+            });
 
             document.getElementById('modal-overlay').addEventListener('click', function(e) {
                 if (e.target === this) closeModal();

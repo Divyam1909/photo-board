@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Digital Love Letter</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Locked screen wallpaper */
+            --locked-wallpaper: url('images/14.jpg');
+            /* Unlocked screen wallpaper (Appears after ink is drained) */
+            --unlocked-wallpaper: url('https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?q=80&w=800&auto=format&fit=crop');
+        }
+
+        body {
+            background-color: #f5e6c8;
+            color: #3a1a00;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* ── PAGE ENTRY REVEAL ── */
+        #page-reveal {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #fffdf5 0%, #f5e6c8 55%, #e0c89a 100%);
+            z-index: 99999;
+            pointer-events: none;
+            animation: reveal-fade 1.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
+        }
+
+        @keyframes reveal-fade {
+            0%   { opacity: 1; filter: blur(0px);  }
+            70%  { opacity: 1; filter: blur(0px);  }
+            100% { opacity: 0; filter: blur(10px); }
+        }
+
+        /* Handwritten font styling */
+        .romantic-text {
+            font-family: 'Caveat', cursive;
+            color: #0a0503; /* Deep ink color */
+            font-weight: 600;
+        }
+
+        /* Phone Hardware Styling */
+        .phone-hardware-wrapper {
+            position: relative;
+            padding: 4px;
+            border-radius: 50px;
+            background: linear-gradient(145deg, #5a5a5a, #1a1a1a);
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.25),
+                0 12px 30px rgba(0,0,0,0.35),
+                0 35px 65px -10px rgba(0,0,0,0.45),
+                0 60px 80px -20px rgba(0,0,0,0.2),
+                inset 0 1px 1px rgba(255,255,255,0.08);
+        }
+
+        .phone-frame {
+            border-radius: 46px;
+            box-shadow: inset 0 0 0 10px #000;
+        }
+
+        /* Physical Buttons */
+        .hardware-btn {
+            position: absolute;
+            background: linear-gradient(to right, #1a1a1a, #3a3a3a, #1e1e1e);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.12),
+                inset 0 -1px 0 rgba(0,0,0,0.6),
+                2px 0 6px rgba(0,0,0,0.5);
+            border-radius: 3px;
+        }
+        .btn-volume-up   { top: 115px; left: -7px; width: 7px; height: 44px; border-radius: 3px 0 0 3px; }
+        .btn-volume-down { top: 170px; left: -7px; width: 7px; height: 44px; border-radius: 3px 0 0 3px; }
+        .btn-power       { top: 135px; right: -7px; width: 7px; height: 58px; border-radius: 0 3px 3px 0; box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.6), -2px 0 6px rgba(0,0,0,0.5); }
+
+        .wallpaper-bg {
+            background-image: var(--locked-wallpaper);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .unlocked-wallpaper-bg {
+            background-image: var(--unlocked-wallpaper);
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-8px); }
+            80% { transform: translateX(8px); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+        
+        /* Proper Aesthetic Letter Paper - NO EXTERNAL SHADOWS */
+        .paper-wrapper {
+            position: relative;
+        }
+
+        .paper-background {
+            background-color: #e8d9b8;
+            clip-path: polygon(0 0, calc(100% - 52px) 0, 100% 52px, 100% 100%, 0 100%);
+            /* clip-path and .paper-fold width/height must match (both 52px) */
+            border-radius: 4px;
+            position: relative;
+            outline: 1px solid rgba(139, 69, 19, 0.15);
+            outline-offset: -12px;
+        }
+
+        /* Folded Corner Effect */
+        .paper-fold {
+            position: absolute;
+            top: 0; right: 0;
+            width: 52px;
+            height: 52px;
+            /* Triangle: top-right filled, bottom-left transparent — matches the clip-path cut */
+            background: linear-gradient(225deg, #bfab8e 50%, transparent 50%);
+            z-index: 20;
+            filter: drop-shadow(-2px 3px 4px rgba(0,0,0,0.22));
+        }
+
+        /* Crease line along the fold diagonal */
+        .paper-fold::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                225deg,
+                transparent 46%,
+                rgba(0,0,0,0.09) 46%,
+                rgba(0,0,0,0.09) 54%,
+                transparent 54%
+            );
+        }
+
+        .paper-background::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* ── BACK BUTTON ── */
+        #back-btn {
+            margin-top: 28px;
+            font-family: 'Caveat', cursive;
+            font-size: 18px;
+            font-weight: 600;
+            color: #f0d8b0;
+            background: #3a1a00;
+            border: 1.5px solid #7c5c3b;
+            padding: 10px 28px;
+            border-radius: 3px;
+            cursor: pointer;
+            letter-spacing: 0.04em;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+            transition: background 0.2s, color 0.2s, transform 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #back-btn:hover {
+            background: #5a2a00;
+            transform: translateY(-1px);
+        }
+
+        /* ── OUTGOING TRANSITION VEIL ── */
+        #transition-veil {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #fffdf5 0%, #f5e6c8 55%, #e0c89a 100%);
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.2);
+            filter: blur(30px);
+        }
+
+        @keyframes veil-bloom {
+            0%   { opacity: 0; transform: scale(0.2); filter: blur(30px); }
+            60%  { opacity: 1; transform: scale(1);   filter: blur(0px);  }
+            100% { opacity: 1; transform: scale(1);   filter: blur(0px);  }
+        }
+
+        @keyframes veil-shrink {
+            0%   { opacity: 0; transform: scale(2.8); filter: blur(40px); }
+            55%  { opacity: 1; transform: scale(1.1); filter: blur(4px);  }
+            100% { opacity: 1; transform: scale(1);   filter: blur(0px);  }
+        }
+
+        #transition-veil.blooming {
+            animation: veil-bloom 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            pointer-events: all;
+        }
+
+        #transition-veil.shrinking {
+            animation: veil-shrink 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            pointer-events: all;
+        }
+
+        /* Realistic Liquid Flow */
+        .liquid-stream {
+            /* Removes dashes to create a solid, continuous stream of fluid */
+            stroke-dasharray: none;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            transition: stroke-width 0.2s ease;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 md:p-10 select-none">
+
+    <div id="page-reveal"></div>
+    <div id="transition-veil"></div>
+
+    <div class="max-w-6xl w-full mx-auto flex flex-col md:flex-row items-center gap-10 md:gap-20 relative z-10">
+
+        <!-- LEFT: Android Phone + Back Button -->
+        <div class="flex flex-col items-center flex-shrink-0 z-20">
+        <div class="phone-hardware-wrapper">
+            <!-- Physical Buttons -->
+            <div class="hardware-btn btn-volume-up"></div>
+            <div class="hardware-btn btn-volume-down"></div>
+            <div class="hardware-btn btn-power"></div>
+
+            <div class="relative w-[320px] h-[650px] bg-black phone-frame overflow-hidden">
+                <!-- Earpiece Speaker -->
+                <div class="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-full bg-gray-900 z-50 shadow-inner"></div>
+                <!-- Camera Hole Punch -->
+                <div class="absolute top-7 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-black border border-gray-800 z-50 shadow-inner"></div>
+
+                <!-- Home Screens (Behind everything, fixed in place) -->
+                <div id="locked-bg" class="absolute inset-0 wallpaper-bg z-0 transition-all duration-300"></div>
+                <div id="unlocked-bg" class="absolute inset-0 unlocked-wallpaper-bg z-0 opacity-0 transition-all duration-500"></div>
+
+                <!-- Internal Ink Physics SVG -->
+                <svg id="internal-ink-svg" class="absolute inset-0 w-full h-full z-40 pointer-events-none" preserveAspectRatio="none">
+                    <path id="internal-ink-path" fill="#111" />
+                </svg>
+
+                <!-- System Notification Popup Wrapper -->
+                <div id="popup-container" class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+                    
+                    <!-- System Notification Popup (Hidden initially) -->
+                    <div id="ink-popup" class="bg-zinc-900/90 backdrop-blur-md border border-zinc-700 rounded-2xl p-5 w-64 shadow-2xl opacity-0 scale-95 transition-all duration-300 pointer-events-none transform -translate-y-4">
+                        <div class="flex items-center gap-3 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <h3 class="text-white font-medium text-lg">System Alert</h3>
+                        </div>
+                        <p class="text-zinc-300 text-sm mb-5 leading-relaxed">Oops, the screen is filled with ink. Do you want to remove it?</p>
+                        <div class="flex gap-3">
+                            <button onclick="handlePopupNo()" class="flex-1 py-2 rounded-lg bg-zinc-800 text-white font-medium hover:bg-zinc-700 transition">No</button>
+                            <button onclick="handlePopupYes()" class="flex-1 py-2 rounded-lg bg-white text-black font-medium hover:bg-gray-200 transition">Yes</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Lock Screen Content (Draggable text, no background) -->
+                <div id="lock-screen" class="absolute inset-0 z-20 transition-transform duration-500 cursor-grab active:cursor-grabbing flex flex-col items-center justify-between py-20">
+                    <!-- Time and Date -->
+                    <div class="text-center text-white drop-shadow-md pointer-events-none mt-2">
+                        <h1 id="clock" class="text-7xl font-light tracking-tight">10:00</h1>
+                        <p id="date" class="text-lg font-medium mt-2">Fri, Oct 20</p>
+                    </div>
+
+                    <!-- Swipe Indicator -->
+                    <div class="flex flex-col items-center text-white/90 drop-shadow-md pointer-events-none mb-4 animate-bounce">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1 drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                        </svg>
+                        <p class="text-sm tracking-wider uppercase font-bold drop-shadow-lg">Swipe up to unlock</p>
+                    </div>
+                </div>
+
+                <!-- Passcode Screen -->
+                <div id="passcode-screen" class="absolute inset-0 backdrop-blur-xl bg-black/60 z-30 flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+                    <p class="text-white mb-6 text-lg tracking-widest uppercase">Enter PIN</p>
+                    
+                    <!-- PIN Dots -->
+                    <div id="pin-dots" class="flex gap-5 mb-12">
+                        <div class="w-3.5 h-3.5 rounded-full border border-white transition-colors duration-200"></div>
+                        <div class="w-3.5 h-3.5 rounded-full border border-white transition-colors duration-200"></div>
+                        <div class="w-3.5 h-3.5 rounded-full border border-white transition-colors duration-200"></div>
+                        <div class="w-3.5 h-3.5 rounded-full border border-white transition-colors duration-200"></div>
+                    </div>
+
+                    <!-- Keypad -->
+                    <div class="grid grid-cols-3 gap-x-8 gap-y-6 text-white text-3xl font-light">
+                        <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="1">1</button>
+                        <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="2">2</button>
+                        <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="3">3</button>
+                        <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="4">4</button>
+                        <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="5">5</button>
+                        <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="6">6</button>
+                        <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="7">7</button>
+                        <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="8">8</button>
+                        <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="9">9</button>
+                        <div class="col-start-2">
+                            <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="0">0</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reset Button (Moved inside phone) -->
+                <div id="reset-container" class="absolute bottom-10 left-0 w-full flex justify-center z-40 opacity-0 pointer-events-none transition-opacity duration-1000">
+                    <button onclick="resetExperience()" class="backdrop-blur-md bg-black/40 border border-white/20 text-white px-5 py-2.5 rounded-full flex items-center gap-2 hover:bg-black/60 transition group shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span class="font-light tracking-wider uppercase text-xs">Lock Screen</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to Photo Board -->
+        <button id="back-btn" onclick="goBack()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+            Back to the photo board
+        </button>
+
+        </div><!-- end phone column -->
+
+        <!-- RIGHT: Paragraph Container -->
+        <div id="text-wrapper" class="w-full md:w-1/2 relative opacity-0 transition-opacity duration-1000 transform translate-y-4 md:translate-y-0 z-10 flex flex-col items-center">
+
+            <!-- The Paper Letter -->
+            <div class="paper-wrapper w-full">
+                <div class="paper-fold"></div>
+                <div class="paper-background p-10 md:p-14 relative z-10">
+                    <h2 id="letter-title" class="romantic-text text-4xl md:text-5xl mb-6 hidden">My Love,</h2>
+                    <!-- Removed typewriter-cursor class so it looks organic -->
+                    <p id="paragraph-box" class="romantic-text text-2xl md:text-3xl leading-relaxed whitespace-pre-wrap tracking-wide"></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Animated Solid Ink Pouring Stream (Connects phone to invisible pen tip) -->
+    <svg id="dynamic-ink-svg" class="fixed top-0 left-0 w-full h-full pointer-events-none z-50 opacity-0 transition-opacity duration-500" preserveAspectRatio="none">
+        <defs>
+            <!-- Gooey filter for realistic fluid cohesion -->
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+                <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+            </filter>
+        </defs>
+        <g filter="url(#goo)">
+            <!-- Changed to a solid line, thicker to simulate liquid -->
+            <path id="dynamic-ink-path" fill="none" stroke="#111" stroke-width="4" stroke-linecap="round" class="liquid-stream" />
+            <!-- Ink pooling at the pen tip -->
+            <circle id="ink-pool" cx="0" cy="0" r="3" fill="#111" />
+        </g>
+    </svg>
+
+    <!-- The Magical Writing Pen -->
+    <div id="pen-wrapper" class="fixed top-0 left-0 pointer-events-none z-[60] opacity-0 transition-opacity duration-500" style="width: 110px; height: 110px; transform-origin: 0% 100%;">
+        <svg width="110" height="110" viewBox="0 0 110 110" style="filter: drop-shadow(4px 12px 8px rgba(0,0,0,0.45));">
+            <defs>
+                <linearGradient id="barrelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%"   stop-color="#6D4C41"/>
+                    <stop offset="40%"  stop-color="#4E342E"/>
+                    <stop offset="100%" stop-color="#3E2723"/>
+                </linearGradient>
+                <linearGradient id="nibGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%"   stop-color="#F0D060"/>
+                    <stop offset="50%"  stop-color="#D4AF37"/>
+                    <stop offset="100%" stop-color="#9A7C20"/>
+                </linearGradient>
+                <linearGradient id="gripGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%"   stop-color="#2a2a2a"/>
+                    <stop offset="100%" stop-color="#111111"/>
+                </linearGradient>
+            </defs>
+
+            <!-- Barrel (mahogany) -->
+            <path d="M 28 72 L 38 82 L 97 23 C 102 17 103 9 98 4 C 93 -1 85 1 80 7 L 28 72 Z" fill="url(#barrelGrad)"/>
+            <!-- Barrel edge highlight -->
+            <path d="M 33 72 L 41 80 L 95 25 C 98 21 98 17 96 15 C 94 13 90 14 87 17 L 33 72 Z" fill="#7B5E57" opacity="0.55"/>
+            <!-- Barrel centre shine -->
+            <path d="M 50 57 L 55 62 L 92 27 C 94 25 94 22 93 20 L 50 57 Z" fill="white" opacity="0.07"/>
+            <!-- Wood grain lines -->
+            <path d="M 42 68 L 90 22" stroke="#2c1a15" stroke-width="0.6" opacity="0.3"/>
+            <path d="M 48 74 L 94 28" stroke="#2c1a15" stroke-width="0.5" opacity="0.2"/>
+
+            <!-- Barrel band / ring -->
+            <path d="M 28 72 L 38 82 L 42 78 L 32 68 Z" fill="#C8A96E"/>
+            <path d="M 30 70 L 40 80 L 41 79 L 31 69 Z" fill="#F0D090" opacity="0.6"/>
+
+            <!-- Grip section -->
+            <path d="M 17 83 L 28 72 L 32 68 L 22 79 Z" fill="url(#gripGrad)"/>
+            <!-- Grip texture rings -->
+            <path d="M 18 82 L 27 73" stroke="#D4AF37" stroke-width="1" opacity="0.5"/>
+            <path d="M 20 84 L 29 75" stroke="#D4AF37" stroke-width="0.8" opacity="0.35"/>
+
+            <!-- Nib (gold) -->
+            <path d="M 0 110 L 17 83 L 22 79 L 28 88 Z" fill="url(#nibGrad)"/>
+            <!-- Nib slit -->
+            <path d="M 0 110 L 20 84" stroke="#8B6508" stroke-width="1.2" opacity="0.8"/>
+            <!-- Nib edge shine -->
+            <path d="M 3 107 L 18 86" stroke="#F5E080" stroke-width="0.8" opacity="0.4"/>
+
+            <!-- Cap / Clip end (gold band at top) -->
+            <circle cx="94" cy="13" r="9" fill="#3E2723"/>
+            <circle cx="94" cy="13" r="7" fill="#2a1a18"/>
+            <circle cx="94" cy="13" r="4" fill="#111"/>
+            <circle cx="94" cy="13" r="1.5" fill="#D4AF37" opacity="0.7"/>
+        </svg>
+    </div>
+
+    <!-- Soft ambient glowing orbs -->
+    <div class="fixed top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#d4a96a] blur-[150px] opacity-20"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-[#c8956a] blur-[150px] opacity-15"></div>
+    </div>
+
+    <script>
+        function goBack() {
+            const veil = document.getElementById('transition-veil');
+            veil.classList.add('shrinking');
+            setTimeout(() => { window.location.href = 'index.html'; }, 900);
+        }
+
+        // Set actual time and date on lock screen
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('clock').innerText = `${hours}:${minutes}`;
+
+            const options = { weekday: 'short', month: 'short', day: 'numeric' };
+            document.getElementById('date').innerText = now.toLocaleDateString('en-US', options);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- Swipe Logic ---
+        const lockScreen = document.getElementById('lock-screen');
+        const passcodeScreen = document.getElementById('passcode-screen');
+        const lockedBg = document.getElementById('locked-bg');
+        
+        let startY = 0;
+        let isDragging = false;
+
+        function handleDragStart(e) {
+            isDragging = true;
+            startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+            lockScreen.style.transition = 'none';
+        }
+
+        function handleDragMove(e) {
+            if (!isDragging) return;
+            const currentY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+            const diffY = currentY - startY;
+
+            // Only allow dragging upwards
+            if (diffY < 0) {
+                lockScreen.style.transform = `translateY(${diffY}px)`;
+
+                // Progressive blur: 0px at rest → 18px at 300px swipe
+                const progress = Math.min(1, Math.abs(diffY) / 300);
+                const blur = (progress * 18).toFixed(1);
+                lockedBg.style.transition = 'none';
+                lockedBg.style.filter = `blur(${blur}px)`;
+            }
+        }
+
+        function handleDragEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            lockScreen.style.transition = 'transform 0.3s ease-out';
+
+            const currentY = e.type.includes('mouse') ? e.clientY : (e.changedTouches ? e.changedTouches[0].clientY : startY);
+            const diffY = currentY - startY;
+
+            // Threshold to trigger unlock screen
+            if (diffY < -100) {
+                lockScreen.style.transform = `translateY(-100%)`;
+                lockedBg.style.transition = 'filter 0.3s ease-out';
+                lockedBg.style.filter = 'blur(18px)';
+                setTimeout(() => {
+                    passcodeScreen.style.opacity = '1';
+                    passcodeScreen.style.pointerEvents = 'auto';
+                }, 100);
+            } else {
+                lockScreen.style.transform = `translateY(0)`;
+                lockedBg.style.transition = 'filter 0.3s ease-out';
+                lockedBg.style.filter = 'blur(0px)';
+            }
+        }
+
+        lockScreen.addEventListener('mousedown', handleDragStart);
+        window.addEventListener('mousemove', handleDragMove);
+        window.addEventListener('mouseup', handleDragEnd);
+
+        lockScreen.addEventListener('touchstart', handleDragStart);
+        window.addEventListener('touchmove', handleDragMove);
+        window.addEventListener('touchend', handleDragEnd);
+
+
+        // --- Passcode Logic ---
+        let currentPin = "";
+        const correctPin = "1234";
+        const pinDots = document.querySelectorAll('#pin-dots > div');
+        const keys = document.querySelectorAll('.key');
+
+        function updateDots() {
+            pinDots.forEach((dot, index) => {
+                if (index < currentPin.length) {
+                    dot.classList.add('bg-white');
+                } else {
+                    dot.classList.remove('bg-white');
+                }
+            });
+        }
+
+        function triggerError() {
+            const dotContainer = document.getElementById('pin-dots');
+            dotContainer.classList.add('shake');
+            setTimeout(() => {
+                dotContainer.classList.remove('shake');
+                currentPin = "";
+                updateDots();
+            }, 400);
+        }
+
+        function triggerSuccess() {
+            passcodeScreen.style.pointerEvents = 'none';
+            
+            // 1. Initialize Physics Loop to fill phone screen with black (Ink)
+            isInkVisible = true;
+            currentInkPercent = 0; // Starts empty
+            targetInkPercent = 100; // Fills up
+            renderPhysicsLoop();
+            
+            setTimeout(() => {
+                // Hide passcode & lockscreens entirely
+                passcodeScreen.style.opacity = '0';
+                lockScreen.style.display = 'none';
+                
+                // Swap the wallpapers while screen is completely covered in black ink
+                lockedBg.style.opacity = '0';
+                document.getElementById('unlocked-bg').style.opacity = '1';
+                
+                // 2. Trigger Notification Popup instead of immediate writing
+                setTimeout(showInkPopup, 400);
+            }, 600);
+        }
+
+        keys.forEach(key => {
+            key.addEventListener('click', () => {
+                if (currentPin.length < 4) {
+                    currentPin += key.getAttribute('data-val');
+                    updateDots();
+
+                    if (currentPin.length === 4) {
+                        setTimeout(() => {
+                            if (currentPin === correctPin) {
+                                triggerSuccess();
+                            } else {
+                                triggerError();
+                            }
+                        }, 200);
+                    }
+                }
+            });
+        });
+
+        // --- Popup Logic ---
+        const popup = document.getElementById('ink-popup');
+
+        function showInkPopup() {
+            popup.style.pointerEvents = 'auto';
+            popup.style.opacity = '1';
+            popup.style.transform = 'translateY(0) scale(1)';
+        }
+
+        function handlePopupNo() {
+            // Shake the popup box
+            popup.classList.add('shake');
+            setTimeout(() => {
+                popup.classList.remove('shake');
+            }, 400);
+        }
+
+        function handlePopupYes() {
+            // Hide Popup
+            popup.style.opacity = '0';
+            popup.style.pointerEvents = 'none';
+            popup.style.transform = 'translateY(-10px) scale(0.95)';
+            
+            // Start the ink writing and pouring animation
+            setTimeout(startInkWritingAnimation, 300);
+        }
+
+        // --- Ink Writing & Pouring Logic ---
+        const romanticParagraph = `From the moment our eyes first met, the world around me faded into a soft, coffee-toned blur, leaving only the sharp, beautiful reality of you. \n\nEvery time I look at you, my heart skips a beat. You are the warmth in my morning coffee, the quiet peace in my chaotic days. This ink flows from the depths of my soul, just to remind you how deeply, endlessly, and completely I am in love with you. \n\nFrom the gentle way you smile to the comforting sound of your voice, everything about you feels like home. I promise to cherish you, to hold you through every storm, and to be the steady hand you can always rely on. \n\nYou are my greatest adventure, my sweetest dream, and my beautiful reality. I love you, now and always.\n\n- By yours one and only,\nD.N.`;
+
+        // Physics State Variables
+        let typingTimeout;
+        let physicsRaf;
+        let isInkVisible = false;
+        let currentInkPercent = 0;
+        let targetInkPercent = 0;
+        let wavePhase = 0;
+        let penIsResting = false;
+
+        function positionPenAtRest(animate) {
+            if (!penIsResting) return;
+            const paperEl = document.querySelector('.paper-background');
+            const r = paperEl.getBoundingClientRect();
+            // Nib sits just inside the right edge of the paper, at its vertical centre
+            const nibX = r.right - 18;
+            const nibY = r.top + r.height / 2;
+            const penWrapper = document.getElementById('pen-wrapper');
+            penWrapper.style.transition = animate
+                ? 'transform 1.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease'
+                : 'none';
+            penWrapper.style.transform = `translate(${nibX}px, ${nibY - 110}px) rotate(-5deg)`;
+        }
+
+        window.addEventListener('scroll', () => positionPenAtRest(false), { passive: true });
+
+        // Continuous Physics Loop for realistic internal fluid sloshing and external pouring
+        function renderPhysicsLoop() {
+            if (!isInkVisible) {
+                document.getElementById('internal-ink-path').setAttribute('d', '');
+                return;
+            }
+
+            physicsRaf = requestAnimationFrame(renderPhysicsLoop);
+
+            // 1. Calculate internal ink physics (Spring/Lerp dynamics)
+            let diff = targetInkPercent - currentInkPercent;
+            // The liquid naturally eases toward the target instead of moving instantly
+            currentInkPercent += diff * 0.06;
+
+            const phone = document.querySelector('.phone-frame');
+            const phoneRect = phone.getBoundingClientRect();
+            const w = phone.clientWidth;
+            const h = phone.clientHeight;
+
+            // Mathematical center height of the fluid surface
+            const inkY = h - (h * (currentInkPercent / 100));
+
+            // Generate liquid surface wave
+            wavePhase += 0.08; // Faster wave phase
+            const velocity = Math.abs(diff);
+            // Significantly increased amplitude for visible movement (base 15px, max 50px)
+            const amplitude = Math.min(50, velocity * 5.0 + 15); 
+
+            // Bezier control points for the sloshing surface (Asymmetrical for more organic fluid)
+            const cp1y = inkY - Math.sin(wavePhase) * amplitude;
+            const cp2y = inkY + Math.cos(wavePhase * 0.8) * amplitude;
+
+            // Draw fluid inside the phone
+            const internalPath = `M 0,${h} L ${w},${h} L ${w},${inkY} C ${w*0.75},${cp2y} ${w*0.25},${cp1y} 0,${inkY} Z`;
+            document.getElementById('internal-ink-path').setAttribute('d', internalPath);
+
+            // Exact surface y at x = w/2 via cubic bezier at t=0.5:
+            // x control points are at w*0.25 and w*0.75, so t=0.5 → x=w/2 exactly.
+            // y(0.5) = (1-t)³*inkY + 3(1-t)²t*cp1y + 3(1-t)t²*cp2y + t³*inkY
+            //        = 0.125*inkY + 0.375*cp1y + 0.375*cp2y + 0.125*inkY
+            //        = 0.25*inkY + 0.375*cp1y + 0.375*cp2y
+            const waveSurfaceY = 0.25 * inkY + 0.375 * cp1y + 0.375 * cp2y;
+
+            // 2. Update external stream pouring out of the phone
+            updateExternalStream(waveSurfaceY, phoneRect);
+        }
+
+        function updateExternalStream(inkY, phoneRect) {
+            const svgCanvas = document.getElementById('dynamic-ink-svg');
+            const inkPath = document.getElementById('dynamic-ink-path');
+            const inkPool = document.getElementById('ink-pool');
+            const penWrapper = document.getElementById('pen-wrapper');
+            const cursor = document.getElementById('typing-cursor');
+            
+            if (!cursor || svgCanvas.style.opacity === '0') {
+                inkPath.setAttribute('d', '');
+                inkPool.setAttribute('r', '0');
+                return;
+            }
+
+            // Start exactly at the wave surface's centre point (bezier y at t=0.5)
+            const startX = phoneRect.left + (phoneRect.width / 2);
+            const startY = phoneRect.top + inkY;
+
+            const cursorRect = cursor.getBoundingClientRect();
+            // End exactly at the invisible cursor span (Pen Tip)
+            const endX = cursorRect.left;
+            const endY = cursorRect.top + (cursorRect.height / 2);
+
+            // Time variable for physics and human-like writing jitter
+            const time = Date.now();
+            const writeBobX = Math.sin(time * 0.015) * 2;
+            const writeBobY = Math.cos(time * 0.02) * 2;
+            const penTilt = Math.sin(time * 0.01) * 3; // Slight angular tilt while writing
+
+            // Position and animate the Fountain Pen
+            // Transform origin is 0% 100% (the nib), so tilting keeps the tip exactly on the text
+            penWrapper.style.transform = `translate(${endX + writeBobX}px, ${endY - 100 + writeBobY}px) rotate(${penTilt}deg)`;
+
+            // The ink needs to flow into the TOP of the pen (the intake orb), not the tip.
+            // The intake orb is at SVG coordinates (85, 15)
+            const holeX = endX + writeBobX + 85;
+            const holeY = endY - 100 + writeBobY + 15;
+
+            // Realistic gravity and physics simulation for the falling stream towards the pen top
+            const dropAmount = 70 + Math.random() * 15; 
+            const wobbleX = Math.sin(time * 0.004) * 15; 
+
+            const cp1X = startX + (holeX - startX) * 0.2 + wobbleX;
+            const cp1Y = startY + dropAmount; 
+            const cp2X = holeX - (holeX - startX) * 0.3 - (wobbleX * 0.5);
+            const cp2Y = holeY - 30; // Liquid swoops dynamically into the top
+
+            // Draw solid smooth bezier curve representing fluid surface tension pouring into the pen
+            inkPath.setAttribute('d', `M ${startX},${startY} C ${cp1X},${cp1Y} ${cp2X},${cp2Y} ${holeX},${holeY}`);
+            
+            // Position the ink pool at the pen intake hole to hide the connection cleanly
+            inkPool.setAttribute('cx', holeX);
+            inkPool.setAttribute('cy', holeY);
+
+            // Dynamically vary stroke width to simulate pulsing liquid stream and droplets
+            const basePulse = 3.5 + Math.sin(time * 0.015) * 1.5;
+            inkPath.style.strokeWidth = `${basePulse}px`;
+            inkPool.setAttribute('r', `${basePulse * 1.5}`); // Larger pool to simulate filling reservoir
+        }
+
+        function startInkWritingAnimation() {
+            const textWrapper = document.getElementById('text-wrapper');
+            const pBox = document.getElementById('paragraph-box');
+            const title = document.getElementById('letter-title');
+            const svgCanvas = document.getElementById('dynamic-ink-svg');
+            const penWrapper = document.getElementById('pen-wrapper');
+            
+            // Show the paper container
+            textWrapper.style.opacity = '1';
+            textWrapper.style.transform = 'translateY(0)';
+            
+            // Show title, start the fluid animation stream, and reveal the pen
+            setTimeout(() => { 
+                title.style.display = 'block'; 
+                svgCanvas.style.opacity = '1'; 
+                penWrapper.style.opacity = '1'; // Fade in the pen
+            }, 500);
+
+            let charIndex = 0;
+            // Slightly varied typing speed feels more human and less robotic
+            const getTypingSpeed = () => 20 + Math.random() * 40; 
+
+            function typeWriter() {
+                if (charIndex < romanticParagraph.length) {
+                    const currentText = romanticParagraph.substring(0, charIndex + 1);
+                    
+                    // &#8203; is a zero-width space. It stays entirely invisible but tracks coordinates perfectly.
+                    pBox.innerHTML = currentText + '<span id="typing-cursor">&#8203;</span>';
+                    
+                    charIndex++;
+                    
+                    // Set the physics target: ink level drains relative to text typed
+                    const progress = charIndex / romanticParagraph.length;
+                    targetInkPercent = (1 - progress) * 100;
+
+                    typingTimeout = setTimeout(typeWriter, getTypingSpeed());
+                } else {
+                    // Finished writing - final cleanup
+                    pBox.innerHTML = romanticParagraph;
+                    targetInkPercent = 0;
+
+                    // Fade out only the stream, keep the pen
+                    svgCanvas.style.opacity = '0';
+
+                    // Animate pen to resting position, then track scroll
+                    penIsResting = true;
+                    positionPenAtRest(true);
+
+                    // Show Reset Button inside phone
+                    setTimeout(() => {
+                        const resetContainer = document.getElementById('reset-container');
+                        resetContainer.style.opacity = '1';
+                        resetContainer.style.pointerEvents = 'auto';
+                    }, 1000);
+                }
+            }
+
+            typingTimeout = setTimeout(typeWriter, 1000);
+        }
+
+        // --- Reset / Lock Screen Again Logic ---
+        function resetExperience() {
+            const textWrapper = document.getElementById('text-wrapper');
+            const resetContainer = document.getElementById('reset-container');
+            const lockScreen = document.getElementById('lock-screen');
+            const passcodeScreen = document.getElementById('passcode-screen');
+            const lockedBg = document.getElementById('locked-bg');
+            const unlockedBg = document.getElementById('unlocked-bg');
+            const pBox = document.getElementById('paragraph-box');
+            const title = document.getElementById('letter-title');
+            const svgCanvas = document.getElementById('dynamic-ink-svg');
+            const penWrapper = document.getElementById('pen-wrapper');
+
+            // 1. Hide the letter and button
+            textWrapper.style.opacity = '0';
+            textWrapper.style.transform = 'translateY(4px)';
+            resetContainer.style.opacity = '0';
+            resetContainer.style.pointerEvents = 'none';
+
+            clearTimeout(typingTimeout);
+            penIsResting = false;
+            svgCanvas.style.opacity = '0';
+            penWrapper.style.opacity = '0';
+
+            // Send ink back down to 0
+            targetInkPercent = 0;
+
+            setTimeout(() => {
+                // Shut off physics loop once ink is hidden
+                isInkVisible = false;
+                cancelAnimationFrame(physicsRaf);
+
+                // 2. Clear out written text
+                pBox.innerHTML = '';
+                title.style.display = 'none';
+                
+                // 3. Swap back the wallpapers
+                unlockedBg.style.opacity = '0';
+                lockedBg.style.opacity = '1';
+                lockedBg.style.filter = 'blur(0px)';
+                
+                // 4. Reveal Lock screen 
+                lockScreen.style.display = 'flex';
+                void lockScreen.offsetWidth; 
+                lockScreen.style.transform = 'translateY(0)';
+                
+                // 5. Reset passcode states
+                currentPin = "";
+                updateDots();
+                passcodeScreen.style.opacity = '0';
+                passcodeScreen.style.pointerEvents = 'none';
+                
+            }, 800); 
+        }
+    </script>
+</body>
+</html>
