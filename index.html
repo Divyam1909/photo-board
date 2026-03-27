@@ -222,7 +222,7 @@
             justify-content: center;
             gap: 5px;
             padding: 5% 6%;
-            min-height: 14%;
+            min-height: 22%;
         }
 
         /* The Wooden Peg */
@@ -278,11 +278,14 @@
             font-size: clamp(7px, 0.85vw, 11px);
             color: #2e1a0a;
             font-style: italic;
-            white-space: nowrap;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1.2;
+            line-height: 1.3;
             text-align: center;
+            word-break: break-word;
         }
 
         /* Realistic Fairy Light Bulbs & Wires */
@@ -655,7 +658,7 @@
             letter-spacing: 0.04em;
             text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
             min-height: 1.8em;
-            max-width: min(80vw, 460px);
+            max-width: min(95vw, 1100px);
         }
 
         #modal-close {
@@ -711,9 +714,180 @@
             #modal-img, #modal-video { width: 80vw; height: 80vw; }
             #modal-polaroid { max-width: 92vw; padding: 10px 10px 44px 10px; }
         }
+
+        /* ── VINYL RECORD PLAYER ───────────────────────────────── */
+        #vinyl-container {
+            position: absolute;
+            right: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 1002;
+            overflow: visible;
+        }
+
+        #modal-overlay.active.has-music #vinyl-container {
+            display: flex;
+        }
+
+        #vinyl-disc {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            background: repeating-radial-gradient(
+                circle at 50% 50%,
+                #111 0px,
+                #333 1.5px,
+                #111 3px,
+                #2a2a2a 4.5px,
+                #111 6px
+            );
+            box-shadow: 0 0 30px rgba(0,0,0,0.7), 0 4px 20px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Sweeping sheen — rotates with the disc, making spin clearly visible */
+        #vinyl-disc::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                rgba(255,255,255,0.08) 40deg,
+                rgba(255,255,255,0.14) 60deg,
+                rgba(255,255,255,0.04) 90deg,
+                transparent 130deg,
+                transparent 360deg
+            );
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #vinyl-disc.spinning {
+            animation: vinyl-spin 1.4s linear infinite;
+            box-shadow: 0 0 50px rgba(255, 190, 100, 0.25), 0 4px 24px rgba(0,0,0,0.6);
+        }
+
+        @keyframes vinyl-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #vinyl-label {
+            position: absolute;
+            width: 42%;
+            height: 42%;
+            top: 29%;
+            left: 29%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 38% 35%, #e8c07a, #b07830 50%, #7a4a18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4);
+            z-index: 2;
+        }
+
+        #vinyl-label-icon {
+            color: rgba(255,255,255,0.55);
+            font-size: 20px;
+            line-height: 1;
+            user-select: none;
+        }
+
+        /* Pause/Play button — below the disc */
+        #vinyl-play-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(15, 8, 0, 0.6);
+            border: 1.5px solid rgba(255,255,255,0.25);
+            cursor: pointer;
+            pointer-events: auto;
+            transition: background 0.2s, transform 0.15s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        #vinyl-play-btn:hover {
+            background: rgba(70, 35, 0, 0.85);
+            border-color: rgba(255,255,255,0.45);
+            transform: scale(1.1);
+        }
+
+        /* Pause bars (default — playing state) */
+        #vinyl-play-btn::before,
+        #vinyl-play-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2.5px;
+            height: 11px;
+            background: rgba(255, 240, 210, 0.9);
+            border-radius: 1.5px;
+        }
+        #vinyl-play-btn::before { left: calc(50% - 5px); }
+        #vinyl-play-btn::after  { left: calc(50% + 2.5px); }
+
+        /* Play triangle (paused state) */
+        #vinyl-play-btn.paused::before {
+            width: 0;
+            height: 0;
+            background: transparent;
+            border-style: solid;
+            border-width: 6px 0 6px 10px;
+            border-color: transparent transparent transparent rgba(255, 240, 210, 0.9);
+            border-radius: 0;
+            left: calc(50% - 3.5px);
+        }
+        #vinyl-play-btn.paused::after { display: none; }
+
+        /* Floating music notes */
+        .vinyl-note {
+            position: absolute;
+            pointer-events: none;
+            color: rgba(255, 215, 140, 0.88);
+            text-shadow: 0 0 8px rgba(255, 170, 60, 0.55);
+            animation: note-float linear forwards;
+            z-index: 20;
+            user-select: none;
+            line-height: 1;
+        }
+
+        @keyframes note-float {
+            0%   { opacity: 0; transform: translateY(0) translateX(0) scale(0.8); }
+            12%  { opacity: 0.9; }
+            75%  { opacity: 0.7; }
+            100% { opacity: 0; transform: translateY(-110px) translateX(var(--drift)) scale(0.6); }
+        }
+
+        #vinyl-status {
+            color: rgba(255, 240, 210, 0.7);
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #vinyl-status.visible {
+            opacity: 1;
+        }
+
+        @media (max-width: 960px) {
+            #vinyl-container { display: none !important; }
+        }
     </style>
 </head>
 <script src="captions.js"></script>
+<script src="music.js"></script>
 <body>
 
     <div id="transition-veil"></div>
@@ -794,6 +968,17 @@
             </div>
         </div>
         <div id="modal-caption"></div>
+        <div id="vinyl-container">
+            <div id="vinyl-disc">
+                <div id="vinyl-label">
+                    <span id="vinyl-label-icon">♪</span>
+                </div>
+                <div id="vinyl-hole"></div>
+            </div>
+            <div id="vinyl-status">♫ playing</div>
+            <button id="vinyl-play-btn" title="Pause / Play"></button>
+        </div>
+        <audio id="music-player" preload="none"></audio>
     </div>
 
     <script>
@@ -935,11 +1120,113 @@
                 });
             }
 
+            // ── MUSIC PLAYER ───────────────────────────────────────
+            let musicEndTime = null;
+            const audioPlayer  = document.getElementById('music-player');
+            const vinylDisc    = document.getElementById('vinyl-disc');
+            const vinylStatus  = document.getElementById('vinyl-status');
+            const vinylPlayBtn = document.getElementById('vinyl-play-btn');
+            const overlay      = document.getElementById('modal-overlay');
+
+            // ── Floating notes ──
+            const noteSymbols = ['♩', '♪', '♫', '♬', '♭'];
+            let noteInterval  = null;
+
+            function spawnNote() {
+                const container = document.getElementById('vinyl-container');
+                if (!container) return;
+                const note = document.createElement('span');
+                note.className = 'vinyl-note';
+                note.textContent = noteSymbols[Math.floor(Math.random() * noteSymbols.length)];
+                const x     = 15 + Math.random() * 140;
+                const y     = 50 + Math.random() * 70;
+                const drift = (Math.random() - 0.5) * 52;
+                const dur   = 2.8 + Math.random() * 1.4;
+                const size  = 18 + Math.random() * 10;
+                note.style.left              = x + 'px';
+                note.style.top               = y + 'px';
+                note.style.fontSize          = size + 'px';
+                note.style.animationDuration = dur + 's';
+                note.style.setProperty('--drift', drift + 'px');
+                container.appendChild(note);
+                setTimeout(() => note.remove(), dur * 1000 + 100);
+            }
+
+            function startNotes() {
+                if (noteInterval) return;
+                spawnNote();
+                noteInterval = setInterval(spawnNote, 420);
+            }
+
+            function stopNotes() {
+                clearInterval(noteInterval);
+                noteInterval = null;
+                document.querySelectorAll('.vinyl-note').forEach(n => n.remove());
+            }
+
+            // ── Play / Pause button ──
+            vinylPlayBtn.addEventListener('click', () => {
+                if (audioPlayer.paused) {
+                    audioPlayer.play().then(() => {
+                        vinylDisc.classList.add('spinning');
+                        vinylStatus.classList.add('visible');
+                        vinylPlayBtn.classList.remove('paused');
+                        startNotes();
+                    }).catch(() => {});
+                } else {
+                    audioPlayer.pause();
+                    vinylDisc.classList.remove('spinning');
+                    vinylStatus.classList.remove('visible');
+                    vinylPlayBtn.classList.add('paused');
+                    stopNotes();
+                }
+            });
+
+            function playMusic(idx) {
+                const track = (typeof music !== 'undefined') && music[String(idx)];
+                if (!track || !track.file) {
+                    overlay.classList.remove('has-music');
+                    return;
+                }
+                audioPlayer.src         = track.file;
+                audioPlayer.currentTime = track.start;
+                musicEndTime            = track.end;
+                overlay.classList.add('has-music');
+                audioPlayer.play().then(() => {
+                    vinylDisc.classList.add('spinning');
+                    vinylStatus.classList.add('visible');
+                    vinylPlayBtn.classList.remove('paused');
+                    startNotes();
+                }).catch(() => {
+                    overlay.classList.remove('has-music');
+                });
+            }
+
+            function stopMusic() {
+                audioPlayer.pause();
+                audioPlayer.src = '';
+                musicEndTime = null;
+                vinylDisc.classList.remove('spinning');
+                vinylStatus.classList.remove('visible');
+                vinylPlayBtn.classList.remove('paused');
+                stopNotes();
+                overlay.classList.remove('has-music');
+            }
+
+            audioPlayer.addEventListener('timeupdate', () => {
+                if (musicEndTime !== null && audioPlayer.currentTime >= musicEndTime) {
+                    audioPlayer.pause();
+                    vinylDisc.classList.remove('spinning');
+                    vinylStatus.classList.remove('visible');
+                    vinylPlayBtn.classList.add('paused');
+                    stopNotes();
+                }
+            });
+
             // ── MODAL ──────────────────────────────────────────────
             let typeTimer = null;
 
             function openModal(idx, captions) {
-                const overlay    = document.getElementById('modal-overlay');
                 const modalImg   = document.getElementById('modal-img');
                 const modalVideo = document.getElementById('modal-video');
                 const capEl      = document.getElementById('modal-caption');
@@ -985,15 +1272,18 @@
 
                 capEl.textContent = '';
                 clearTimeout(typeTimer);
+                stopMusic();
+                playMusic(idx);
                 const caption = (entry && entry.caption) ? entry.caption : (typeof entry === 'string' ? entry : '');
                 const onDone  = isPortal ? () => {
                     setTimeout(() => portalCta.classList.add('revealed'), 300);
                 } : null;
-                typeTimer = setTimeout(() => typewrite(capEl, caption, 48, onDone), 400);
+                typeTimer = setTimeout(() => typewrite(capEl, caption, 30, onDone), 400);
             }
 
             function closeModal() {
                 clearTimeout(typeTimer);
+                stopMusic();
                 const modalVideo = document.getElementById('modal-video');
                 const modalImg   = document.getElementById('modal-img');
                 const portalCta  = document.getElementById('modal-portal-cta');

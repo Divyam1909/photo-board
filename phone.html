@@ -11,7 +11,7 @@
     <style>
         :root {
             /* Locked screen wallpaper */
-            --locked-wallpaper: url('images/14.jpg');
+            --locked-wallpaper: url('images/19.jpg');
             /* Unlocked screen wallpaper (Appears after ink is drained) */
             --unlocked-wallpaper: url('images/flowers.png');
         }
@@ -221,6 +221,183 @@
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
             transition: stroke-width 0.2s ease;
         }
+
+        /* ── VINYL DISC ─────────────────────────────────────── */
+        #phone-vinyl-container {
+            position: fixed;
+            right: 52px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            z-index: 200;
+            overflow: visible;
+        }
+
+        #phone-vinyl-container.visible {
+            display: flex;
+        }
+
+        #phone-vinyl-disc {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: repeating-radial-gradient(
+                circle at 50% 50%,
+                #111 0px,
+                #333 1.5px,
+                #111 3px,
+                #2a2a2a 4.5px,
+                #111 6px
+            );
+            box-shadow: 0 0 28px rgba(0,0,0,0.7), 0 4px 18px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #phone-vinyl-disc::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                rgba(255,255,255,0.08) 40deg,
+                rgba(255,255,255,0.14) 60deg,
+                rgba(255,255,255,0.04) 90deg,
+                transparent 130deg,
+                transparent 360deg
+            );
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #phone-vinyl-disc.spinning {
+            animation: phone-vinyl-spin 1.4s linear infinite;
+            box-shadow: 0 0 44px rgba(255, 190, 100, 0.22), 0 4px 22px rgba(0,0,0,0.6);
+        }
+
+        @keyframes phone-vinyl-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #phone-vinyl-label {
+            position: absolute;
+            width: 42%;
+            height: 42%;
+            top: 29%;
+            left: 29%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 38% 35%, #e8c07a, #b07830 50%, #7a4a18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4);
+            z-index: 2;
+        }
+
+        #phone-vinyl-label-icon {
+            color: rgba(255,255,255,0.55);
+            font-size: 18px;
+            line-height: 1;
+            user-select: none;
+        }
+
+        #phone-vinyl-hole {
+            position: absolute;
+            width: 9%;
+            height: 9%;
+            top: 45.5%;
+            left: 45.5%;
+            border-radius: 50%;
+            background: #0a0a0a;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.06);
+            z-index: 3;
+        }
+
+        #phone-vinyl-status {
+            color: rgba(0, 0, 0, 0.75);
+            font-family: 'Caveat', cursive;
+            font-style: italic;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #phone-vinyl-status.visible {
+            opacity: 1;
+        }
+
+        #phone-vinyl-play-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(15, 8, 0, 0.6);
+            border: 1.5px solid rgba(255,255,255,0.25);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        #phone-vinyl-play-btn:hover {
+            background: rgba(70, 35, 0, 0.85);
+            border-color: rgba(255,255,255,0.45);
+            transform: scale(1.1);
+        }
+
+        #phone-vinyl-play-btn::before,
+        #phone-vinyl-play-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2.5px;
+            height: 11px;
+            background: rgba(255, 240, 210, 0.9);
+            border-radius: 1.5px;
+        }
+        #phone-vinyl-play-btn::before { left: calc(50% - 5px); }
+        #phone-vinyl-play-btn::after  { left: calc(50% + 2.5px); }
+
+        #phone-vinyl-play-btn.paused::before {
+            width: 0;
+            height: 0;
+            background: transparent;
+            border-style: solid;
+            border-width: 6px 0 6px 10px;
+            border-color: transparent transparent transparent rgba(255, 240, 210, 0.9);
+            border-radius: 0;
+            left: calc(50% - 3.5px);
+        }
+        #phone-vinyl-play-btn.paused::after { display: none; }
+
+        /* Floating notes */
+        .phone-vinyl-note {
+            position: absolute;
+            pointer-events: none;
+            color: rgba(255, 215, 140, 0.88);
+            text-shadow: 0 0 8px rgba(255, 170, 60, 0.55);
+            animation: phone-note-float linear forwards;
+            z-index: 20;
+            user-select: none;
+            line-height: 1;
+        }
+
+        @keyframes phone-note-float {
+            0%   { opacity: 0; transform: translateY(0) translateX(0) scale(0.8); }
+            12%  { opacity: 0.9; }
+            75%  { opacity: 0.7; }
+            100% { opacity: 0; transform: translateY(-110px) translateX(var(--drift)) scale(0.6); }
+        }
+
+        @media (max-width: 960px) {
+            #phone-vinyl-container { display: none !important; }
+        }
     </style>
 </head>
 <body class="flex items-center justify-center p-4 md:p-10 select-none">
@@ -316,6 +493,13 @@
                         <div class="col-start-2">
                             <button class="key w-16 h-16 rounded-full bg-white/5 hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center" data-val="0">0</button>
                         </div>
+                        <button id="backspace-btn" class="w-16 h-16 rounded-full hover:bg-white/20 active:bg-white/30 transition flex items-center justify-center text-white">
+                            <svg width="26" height="20" viewBox="0 0 26 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9.5 1L1 10L9.5 19H25V1H9.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+                                <line x1="13.5" y1="6.5" x2="20.5" y2="13.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+                                <line x1="20.5" y1="6.5" x2="13.5" y2="13.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -355,6 +539,18 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Vinyl Disc Player -->
+    <div id="phone-vinyl-container">
+        <div id="phone-vinyl-disc">
+            <div id="phone-vinyl-label">
+                <span id="phone-vinyl-label-icon">♪</span>
+            </div>
+            <div id="phone-vinyl-hole"></div>
+        </div>
+        <div id="phone-vinyl-status">♫ playing</div>
+        <button id="phone-vinyl-play-btn" title="Pause / Play"></button>
     </div>
 
     <!-- Animated Solid Ink Pouring Stream (Connects phone to invisible pen tip) -->
@@ -438,10 +634,13 @@
 
     <script>
         function goBack() {
+            stopPhoneMusic();
             const veil = document.getElementById('transition-veil');
             veil.classList.add('shrinking');
             setTimeout(() => { window.location.href = 'index.html'; }, 900);
         }
+
+        document.addEventListener('keydown', e => { if (e.key === ' ') e.preventDefault(); });
 
         // Set actual time and date on lock screen
         function updateClock() {
@@ -524,7 +723,7 @@
 
         // --- Passcode Logic ---
         let currentPin = "";
-        const correctPin = "1234";
+        const correctPin = "2410";
         const pinDots = document.querySelectorAll('#pin-dots > div');
         const keys = document.querySelectorAll('.key');
 
@@ -590,6 +789,13 @@
             });
         });
 
+        document.getElementById('backspace-btn').addEventListener('click', () => {
+            if (currentPin.length > 0) {
+                currentPin = currentPin.slice(0, -1);
+                updateDots();
+            }
+        });
+
         // --- Popup Logic ---
         const popup = document.getElementById('ink-popup');
 
@@ -618,7 +824,7 @@
         }
 
         // --- Ink Writing & Pouring Logic ---
-        const romanticParagraph = `From the moment our eyes first met, the world around me faded into a soft, coffee-toned blur, leaving only the sharp, beautiful reality of you. \n\nEvery time I look at you, my heart skips a beat. You are the warmth in my morning coffee, the quiet peace in my chaotic days. This ink flows from the depths of my soul, just to remind you how deeply, endlessly, and completely I am in love with you. \n\nFrom the gentle way you smile to the comforting sound of your voice, everything about you feels like home. I promise to cherish you, to hold you through every storm, and to be the steady hand you can always rely on. \n\nYou are my greatest adventure, my sweetest dream, and my beautiful reality. I love you, now and always.\n\n- By yours one and only,\nD.N.`;
+        const romanticParagraph = `From the moment our eyes first met, everything around me softened, as if the world itself stepped aside, leaving only you in perfect clarity.\n\nEvery time I look at you, something within me shifts, a quiet, certain feeling that I have found where I belong. These words rise from somewhere deep within me, only to remind you how deeply, endlessly, and completely I am in love with you.\n\nIn your presence, I find a kind of peace I never knew I was searching for. In your smile, I find warmth, and in your voice, a comfort that feels like home. I promise to stand by you, to hold you through every storm, and to be the one you can always lean on, no matter what comes our way.\n\nYou are not just a part of my life, you are the feeling that gives it meaning, the quiet certainty I never want to lose. I love you, now and always.\n\n- By yours one and only,\nD.N.`;
 
         // Physics State Variables
         let typingTimeout;
@@ -751,7 +957,100 @@
             inkPool.setAttribute('r', `${basePulse * 1.5}`); // Larger pool to simulate filling reservoir
         }
 
+        // ── Phone background music + vinyl disc ────────────────
+        const phoneAudio     = new Audio('music/phone.mp3');
+        const pVinylDisc     = () => document.getElementById('phone-vinyl-disc');
+        const pVinylStatus   = () => document.getElementById('phone-vinyl-status');
+        const pVinylBtn      = () => document.getElementById('phone-vinyl-play-btn');
+        const pVinylCont     = () => document.getElementById('phone-vinyl-container');
+
+        // Floating notes
+        const pNoteSymbols = ['♩', '♪', '♫', '♬', '♭'];
+        let pNoteInterval  = null;
+
+        function pSpawnNote() {
+            const cont = pVinylCont();
+            if (!cont) return;
+            const note = document.createElement('span');
+            note.className = 'phone-vinyl-note';
+            note.textContent = pNoteSymbols[Math.floor(Math.random() * pNoteSymbols.length)];
+            const x     = 15 + Math.random() * 130;
+            const y     = 50 + Math.random() * 70;
+            const drift = (Math.random() - 0.5) * 52;
+            const dur   = 2.8 + Math.random() * 1.4;
+            const size  = 18 + Math.random() * 10;
+            note.style.left              = x + 'px';
+            note.style.top               = y + 'px';
+            note.style.fontSize          = size + 'px';
+            note.style.animationDuration = dur + 's';
+            note.style.setProperty('--drift', drift + 'px');
+            cont.appendChild(note);
+            setTimeout(() => note.remove(), dur * 1000 + 100);
+        }
+
+        function pStartNotes() {
+            if (pNoteInterval) return;
+            pSpawnNote();
+            pNoteInterval = setInterval(pSpawnNote, 420);
+        }
+
+        function pStopNotes() {
+            clearInterval(pNoteInterval);
+            pNoteInterval = null;
+            document.querySelectorAll('.phone-vinyl-note').forEach(n => n.remove());
+        }
+
+        function setVinylPlaying() {
+            pVinylDisc().classList.add('spinning');
+            pVinylStatus().classList.add('visible');
+            pVinylBtn().classList.remove('paused');
+            pStartNotes();
+        }
+
+        function setVinylPaused() {
+            pVinylDisc().classList.remove('spinning');
+            pVinylStatus().classList.remove('visible');
+            pVinylBtn().classList.add('paused');
+            pStopNotes();
+        }
+
+        // Pause/play button
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('phone-vinyl-play-btn').addEventListener('click', () => {
+                if (phoneAudio.paused) {
+                    phoneAudio.play().then(setVinylPlaying).catch(() => {});
+                } else {
+                    phoneAudio.pause();
+                    setVinylPaused();
+                }
+            });
+        });
+
+        function startPhoneMusic() {
+            phoneAudio.currentTime = 154;
+            phoneAudio.play().then(() => {
+                pVinylCont().classList.add('visible');
+                setVinylPlaying();
+            }).catch(() => {});
+            const stopAt = 330;
+            phoneAudio.addEventListener('timeupdate', function onTick() {
+                if (phoneAudio.currentTime >= stopAt) {
+                    phoneAudio.pause();
+                    phoneAudio.removeEventListener('timeupdate', onTick);
+                    setVinylPaused();
+                }
+            });
+        }
+
+        function stopPhoneMusic() {
+            phoneAudio.pause();
+            pVinylCont().classList.remove('visible');
+            setVinylPaused();
+        }
+        // ───────────────────────────────────────────────────────
+
         function startInkWritingAnimation() {
+            startPhoneMusic();
             const textWrapper = document.getElementById('text-wrapper');
             const pBox = document.getElementById('paragraph-box');
             const title = document.getElementById('letter-title');
@@ -819,6 +1118,7 @@
 
         // --- Reset / Lock Screen Again Logic ---
         function resetExperience() {
+            stopPhoneMusic();
             const textWrapper = document.getElementById('text-wrapper');
             const resetContainer = document.getElementById('reset-container');
             const lockScreen = document.getElementById('lock-screen');
@@ -839,6 +1139,8 @@
             clearTimeout(typingTimeout);
             penIsResting = false;
             svgCanvas.style.opacity = '0';
+            penWrapper.style.transition = 'none';
+            penWrapper.style.transform = '';
             penWrapper.style.opacity = '0';
 
             // Send ink back down to 0
