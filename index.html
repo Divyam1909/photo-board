@@ -26,15 +26,72 @@
 
         /* The Main Wooden Frame */
         .board-frame {
-            width: 95vw;
-            height: 90vh;
-            max-width: 1600px;
+            width: 100%;
+            height: 100%;
             background: #6b4423;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.9);
             position: relative;
+            z-index: 1;
             border: 4px solid #3a2211;
+        }
+
+        /* Board wrapper — needed so hooks can sit behind the frame */
+        #board-wrapper {
+            position: relative;
+            width: 95vw;
+            max-width: 1600px;
+            height: 90vh;
+        }
+
+        /* Board hanging hooks */
+        .board-hook {
+            position: absolute;
+            z-index: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            /* ring bottom sits 6px inside the top of the board so the stem is hidden */
+            bottom: calc(100% - 6px);
+        }
+        .board-hook-left  { left: 14%; }
+        .board-hook-right { right: 14%; }
+
+        .board-hook-rope {
+            width: 6px;
+            height: 60px;
+            background:
+                repeating-linear-gradient(
+                    to bottom,
+                    #7a5228 0px,
+                    #9c6e3a 2px,
+                    #b8864a 4px,
+                    #7a5228 6px
+                ),
+                linear-gradient(to right, #6b4522, #a0672e, #6b4522);
+            background-blend-mode: multiply;
+            border-radius: 3px;
+            box-shadow: 1px 0 2px rgba(0,0,0,0.35), -1px 0 1px rgba(255,255,255,0.08);
+        }
+        .board-hook-ring {
+            width: 22px;
+            height: 22px;
+            border: 4px solid #8a8a8a;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.2), transparent 60%);
+            box-shadow: 1px 3px 6px rgba(0,0,0,0.6),
+                        inset 0 1px 3px rgba(255,255,255,0.25);
+            margin-top: -2px;
+        }
+        .board-hook-stem {
+            width: 7px;
+            height: 10px;
+            background: linear-gradient(to right, #6e6e6e, #c8c8c8, #8a8a8a, #6e6e6e);
+            border-radius: 1px 1px 3px 3px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+            margin-top: -2px;
         }
 
         /* Container for lights wrapping the wooden frame */
@@ -151,11 +208,21 @@
 
         .polaroid {
             background: #fdfdfd;
-            padding: 6% 6% 24% 6%;
+            padding: 6% 6% 0 6%;
             border-radius: 2px;
             box-shadow: 3px 5px 12px rgba(0,0,0,0.4);
             position: relative;
             margin-top: 5px;
+        }
+
+        .polaroid-bottom {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 5% 6%;
+            min-height: 14%;
         }
 
         /* The Wooden Peg */
@@ -200,28 +267,22 @@
         }
 
         .polaroid-hearts {
-            position: absolute;
-            bottom: 5px;
-            left: 8px;
             color: #d63031;
-            font-size: 10px;
+            font-size: 11px;
+            flex-shrink: 0;
+            line-height: 1;
         }
 
         .polaroid-title {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 0 8px 5px 8px;
-            text-align: center;
             font-family: 'Georgia', serif;
-            font-size: clamp(6px, 0.75vw, 10px);
-            color: #5a3a1a;
+            font-size: clamp(7px, 0.85vw, 11px);
+            color: #2e1a0a;
             font-style: italic;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             line-height: 1.2;
+            text-align: center;
         }
 
         /* Realistic Fairy Light Bulbs & Wires */
@@ -536,7 +597,8 @@
             align-items: center;
             justify-content: center;
             gap: 20px;
-            background: #111;
+            background: rgba(0, 0, 0, 0.52);
+            backdrop-filter: blur(1px);
         }
 
         #modal-portal-cta.visible {
@@ -651,9 +713,23 @@
         }
     </style>
 </head>
+<script src="captions.js"></script>
 <body>
 
     <div id="transition-veil"></div>
+
+    <div id="board-wrapper">
+        <!-- Hanging hook rings — z:0, sit behind the board frame (z:1) -->
+        <div class="board-hook board-hook-left">
+            <div class="board-hook-rope"></div>
+            <div class="board-hook-ring"></div>
+            <div class="board-hook-stem"></div>
+        </div>
+        <div class="board-hook board-hook-right">
+            <div class="board-hook-rope"></div>
+            <div class="board-hook-ring"></div>
+            <div class="board-hook-stem"></div>
+        </div>
 
     <div class="board-frame" id="board-frame">
         <!-- Frame Lights Container wrapped around the outer border -->
@@ -699,6 +775,7 @@
             </div>
         </div>
     </div>
+    </div><!-- /#board-wrapper -->
 
     <!-- Zoom Modal -->
     <div id="modal-overlay">
@@ -721,28 +798,6 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const captions = {
-                "1":  { "title": "Our First Date",        "caption": "Flowers on the table, fries in the middle, and you across from me. I knew even then that this was going to be something special." },
-                "2":  { "title": "That Smile",            "caption": "This is my favourite photo of us. Your head on mine, that little smirk of yours, and me grinning like an idiot. This is exactly what happiness looks like." },
-                "3":  { "title": "Surprised Her",         "caption": "The look on your face when I showed up with sunflowers and a book — eyes shut, smiling so wide you couldn't even open them. I'd do it a hundred times over just to see this." },
-                "4":  { "title": "Elevator Moment",       "caption": "A stolen mirror selfie in an elevator, bouquet still in hand. Every floor we passed felt like the world slowing down just for us." },
-                "5":  { "title": "Station Goofballs",     "caption": "Standing at the railway station being absolute idiots together. I don't even remember what we were laughing about, but I remember I never wanted to get on that train." },
-                "6":  { "title": "Lazy Afternoon",        "caption": "Nothing fancy — just the two of us on a quiet afternoon, curtains drawn, nowhere to be. These are the moments I hold onto the tightest." },
-                "7":  { "title": "Kiss on the Cheek",     "caption": "You leaned in without warning and kissed my cheek like it was the most natural thing in the world. It kind of is, with you." },
-                "8":  { "title": "Eye to Eye",            "caption": "Two pairs of eyes, two completely different people, one ridiculous amount of love. I could look at you forever and still not get enough." },
-                "9":  { "title": "Looking Into You",      "caption": "Same photo, different moment. The closer we got, the more I realised — your eyes are the only place I've ever felt completely at home." },
-                "10": { "title": "Golden Hour Us",        "caption": "The sun was setting and you were making the most ridiculous pout while I was half in the frame. Still the most beautiful thing I've ever seen — you, not the sunset." },
-                "11": { "title": "Infinity Ring",         "caption": "An infinity ring against the sea at dusk. I put it on your finger at the water's edge and didn't say much, but I meant forever." },
-                "12": { "title": "Hold Me Close",         "caption": "You buried your head in my shoulder in the middle of the street and I just held on. I didn't want to let go. I still don't." },
-                "13": { "title": "Looking at Each Other", "caption": "We were just standing there, looking at each other, and someone caught this. I'm so glad they did. This is what we look like when we're completely ourselves." },
-                "14": { "title": "You Leaned In",         "caption": "Your head resting against my chest, eyes closed, and me looking down at you like I can't quite believe you're real. I still can't, some days." },
-                "15": { "title": "City Nights",           "caption": "You spinning on a rooftop in the city lights, hair flying, laughing into the wind. I was watching you and thinking — god, she's incredible." },
-                "16": { "title": "Both Kissing",          "caption": "We both leaned in at the same time and it ended up being more of a cheek squish than anything else. Honestly, this might be my favourite one of all." },
-                "17": { "title": "Us in Motion",          "caption": "Some moments are too alive to be frozen in a photo. This one moves, just like we do — always forward, always together.", "type": "video" },
-                "18": { "title": "Coming Soon", "caption": "A memory waiting to be made.", "placeholder": true },
-                "19": { "title": "Coming Soon", "caption": "A memory waiting to be made.", "placeholder": true },
-                "20": { "title": "One More Thing...", "caption": "You think this was all?...... I've been saving the best part for last. Close your eyes, take a breath — there's one more surprise waiting for you.", "type": "portal" }
-            };
 
             // Auto-distribute entries across 3 rows
             const total = Object.keys(captions).length;
@@ -833,14 +888,15 @@
                         const isVideo  = entry && entry.type === 'video';
                         const isPortal = entry && entry.type === 'portal';
                         const isPlaceholder = entry && entry.placeholder;
+                        const imgExt = (entry && entry.ext) ? entry.ext : 'jpg';
                         const mediaHTML = isVideo
                             ? `<video src="images/${idx}.mp4" muted preload="metadata"></video>
                                <div class="video-play-icon">&#9654;</div>`
                             : isPortal
-                            ? `<div class="portal-icon">✦</div>`
+                            ? `<img src="images/portal.png" alt="Portal" style="object-position: top;" />`
                             : isPlaceholder
                             ? ``
-                            : `<img src="images/${idx}.jpg" alt="Memory ${idx}"
+                            : `<img src="images/${idx}.${imgExt}" alt="Memory ${idx}"
                                     onerror="this.src=''; this.style.background='#1a1a1a';" />`;
                         wrapper.innerHTML = `
                             <div class="polaroid">
@@ -848,8 +904,10 @@
                                 <div class="photo-area">
                                     ${mediaHTML}
                                 </div>
-                                <div class="polaroid-hearts">❤️</div>
-                                <div class="polaroid-title">${title}</div>
+                                <div class="polaroid-bottom">
+                                    <div class="polaroid-hearts">❤️</div>
+                                    <div class="polaroid-title">${title}</div>
+                                </div>
                             </div>
                         `;
                         wrapper.addEventListener('click', () => openModal(idx, captions));
@@ -910,7 +968,7 @@
                     modalVideo.pause();
                     modalVideo.src              = '';
                     modalImg.style.display      = 'block';
-                    modalImg.src                = '';
+                    modalImg.src                = 'images/portal.png';
                     modalImg.style.background   = '#111';
                     portalCta.classList.add('visible');
                     overlay.classList.add('active');
@@ -918,8 +976,9 @@
                     modalVideo.style.display = 'none';
                     modalVideo.pause();
                     modalVideo.src           = '';
+                    const modalImgExt = (entry && entry.ext) ? entry.ext : 'jpg';
                     modalImg.style.display   = 'block';
-                    modalImg.src             = `images/${idx}.jpg`;
+                    modalImg.src             = `images/${idx}.${modalImgExt}`;
                     modalImg.onerror         = () => { modalImg.src = ''; modalImg.style.background = '#1a1a1a'; };
                     overlay.classList.add('active');
                 }

@@ -5,7 +5,12 @@
       "Bash(mv \"WhatsApp Image 2026-03-22 at 4.36.42 PM \\(1\\).jpeg\" \"2.jpg\")",
       "Bash(mv \"WhatsApp Image 2026-03-22 at 4.36.46 PM.jpeg\" \"3.jpg\")",
       "Bash(mv \"WhatsApp Image 2026-03-22 at 4.36.46 PM \\(1\\).jpeg\" \"4.jpg\")",
-      "Bash(mv \"WhatsApp Image 2026-03-22 at 4.36.46 PM \\(2\\).jpeg\" \"5.jpg\")"
+      "Bash(mv \"WhatsApp Image 2026-03-22 at 4.36.46 PM \\(2\\).jpeg\" \"5.jpg\")",
+      "Bash(mv 4.jpg temp_4.jpg)",
+      "Bash(mv 5.jpg temp_5.jpg)",
+      "Bash(mv 6.jpg temp_6.jpg)",
+      "Bash(mv 7.jpg temp_7.jpg)",
+      "Bash(mv 8.jpg temp_8.jpg)"
     ]
   }
 }
